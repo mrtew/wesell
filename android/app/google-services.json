@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "386874597189",
+    "project_id": "wesell-mrtew",
+    "storage_bucket": "wesell-mrtew.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:386874597189:android:a6ea1cbcf48930adb3e82c",
+        "android_client_info": {
+          "package_name": "com.example.wesell"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy6QambhFmFPM-R22OMttR8IO3qt_4DlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
