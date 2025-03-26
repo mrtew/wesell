@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class UserController {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _usersCollection = FirebaseFirestore.instance.collection('users');
 
   // Create a new user
@@ -51,12 +51,31 @@ class UserController {
       return (await getUserById(userId))!;
     } else {
       // Create a new user
-      DateTime now = DateTime.now();
+      Timestamp now = Timestamp.fromDate(DateTime.now());
+
       UserModel newUser = UserModel(
         uid: userId,
+        userId: userId,
+        role: 'user',
+        username: '',
+        avatar: '',
         phoneNumber: phoneNumber,
+        email: '',
+        identity: {},
+        isPhoneNumberVerified: true,
+        isEmailVerified: false,
+        isIdentityVerified: false,
+        addresses: [],
+        itemsPosted: [],
+        itemsPurchased: [],
+        itemsSold: [],
+        chats: [],
+        transactions: [],
+        balance: 0.0,
+        pin: 0,
         createdAt: now,
         updatedAt: now,
+        deletedAt: null,
       );
       await createUser(newUser);
       return newUser;
