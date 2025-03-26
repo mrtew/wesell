@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wesell/views/profile/setting_screen.dart';
+import 'package:wesell/views/me/setting_screen.dart';
 import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
 import '../views/item/item_screen.dart';
 import '../views/chat/chat_screen.dart';
-import '../views/profile/profile_screen.dart';
+import '../views/me/me_screen.dart';
 import '../providers/auth_provider.dart';
 import '../providers/navigation_provider.dart';
 
@@ -80,14 +80,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/profile',
-        name: 'profile',
+        path: '/me',
+        name: 'me',
         pageBuilder: (context, state) {
           // Schedule the state update after the build phase
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ref.read(currentTabProvider.notifier).state = 3;
           });
-          return MaterialPage(child: const ProfileScreen());
+          return MaterialPage(child: const MeScreen());
         },
       ),
       GoRoute(

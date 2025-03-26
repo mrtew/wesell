@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
 
-class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+class MeScreen extends ConsumerWidget {
+  const MeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: const AppBarWidget(
-        title: 'Profile',
+        title: 'Me',
         showBackButton: false,
       ),
       body: SafeArea(

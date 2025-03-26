@@ -28,14 +28,31 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
         showBackButton: true,
       ),
       body: SingleChildScrollView(
-        child: ListTile(
-          leading: const Icon(Icons.logout_rounded, color: Colors.blue),
-          title: const Text('Logout'),
-          trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
-          onTap: () {
-            _authController.signOut();
-            ref.read(verificationIdProvider.notifier).state = null;
-          },
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('Profile'),
+              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+              onTap: () {
+                // TODO: Navigate to profile screen
+              },
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 16,
+              endIndent: 16,
+              color: Colors.grey[200],
+            ),
+            ListTile(
+              title: const Text('Logout'),
+              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+              onTap: () {
+                _authController.signOut();
+                ref.read(verificationIdProvider.notifier).state = null;
+              },
+            ),
+          ],
         ),
       ),
     );

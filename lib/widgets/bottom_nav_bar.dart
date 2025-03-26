@@ -75,7 +75,7 @@ class BottomNavBar extends ConsumerWidget {
               Icons.person,
               color: Colors.green,
             ),
-            label: 'Profile',
+            label: 'Me',
           ),
         ],
       ),

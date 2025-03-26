@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
 // Tab paths in order of their indices
-final tabPaths = ['/home', '/item', '/chat', '/profile'];
+final tabPaths = ['/home', '/item', '/chat', '/me'];
 
 // Get the path for a given tab index
 String getPathForIndex(int index) {
