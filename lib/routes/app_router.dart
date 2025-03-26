@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wesell/views/me/setting_screen.dart';
 import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
 import '../views/item/item_screen.dart';
@@ -9,6 +8,8 @@ import '../views/chat/chat_screen.dart';
 import '../views/me/me_screen.dart';
 import '../providers/auth_provider.dart';
 import '../providers/navigation_provider.dart';
+import '../views/me/profile_screen.dart';
+import '../views/me/setting_screen.dart';
 
 // GoRouter Provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -88,6 +89,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ref.read(currentTabProvider.notifier).state = 3;
           });
           return MaterialPage(child: const MeScreen());
+        },
+      ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const ProfileScreen());
         },
       ),
       GoRoute(
