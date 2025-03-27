@@ -27,7 +27,7 @@ class AppBarWidget extends ConsumerWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       leading: showBackButton ? IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
         onPressed: () {
           // Navigate to home tab
           // ref.read(currentTabProvider.notifier).state = 0;
