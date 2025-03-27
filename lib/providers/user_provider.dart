@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/user_model.dart';
+// import 'package:wesell/models/user_model.dart';
 import '../controllers/user_controller.dart';
 import 'auth_provider.dart';
 
@@ -9,7 +9,8 @@ final userControllerProvider = Provider<UserController>((ref) {
 });
 
 // Provider for the current user data
-final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+// final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+final currentUserProvider = FutureProvider.autoDispose<dynamic>((ref) async {
   final authState = ref.watch(authUserProvider);
   final userController = ref.watch(userControllerProvider);
   

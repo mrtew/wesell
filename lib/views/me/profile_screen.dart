@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../providers/user_provider.dart';
-import '../../models/user_model.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -16,18 +16,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // ref.watch(currentUserProvider);
-    // Add any initialization logic here
+    // Future.microtask(() => ref.refresh(currentUserProvider));
   }
-  // provider
-  // edit photo
-  // edit name
-  // address
-  // phone
-  // identity
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {   
     return Scaffold(
       appBar: const AppBarWidget(
         title: 'Profile',
@@ -36,11 +29,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(child: Text('Error: $error')),
-        data: (user) {
-          // Default values if user or specific fields are null
-          final String username = user?.username ?? '';
-          final String avatar = user?.avatar ?? 'assets/images/default_avatar_1024x1024.png';
-          
+        data: (user) {        
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -60,9 +49,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       // User avatar
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: avatar != ''
+                        child: user?.avatar != ''
                             ? Image.network(
-                                avatar,
+                                user?.avatar ?? '',
                                 width: 40,
                                 height: 40,
                                 fit: BoxFit.cover,
@@ -88,7 +77,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
-                    // GoRouter.of(context).push('/profile');
+                    // GoRouter.of(context).push('/edit_avatar');
                   },
                   tileColor: Colors.white,
                 ),
@@ -102,13 +91,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 
                 // Name Section
                 ListTile(
-                  title: const Text('Name'),
+                  title: const Text('Username'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // User name
                       Text(
-                        username,
+                        user?.username,
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey[400],
@@ -120,7 +109,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
-                    // GoRouter.of(context).push('/profile');
+                    GoRouter.of(context).push('/edit_username');
                   },
                   tileColor: Colors.white,
                 ),

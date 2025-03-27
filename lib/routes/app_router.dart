@@ -5,6 +5,7 @@ import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
 import '../views/item/item_screen.dart';
 import '../views/chat/chat_screen.dart';
+import '../views/me/edit_username.dart';
 import '../views/me/me_screen.dart';
 import '../providers/auth_provider.dart';
 import '../providers/navigation_provider.dart';
@@ -96,6 +97,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'profile',
         pageBuilder: (context, state) {
           return MaterialPage(child: const ProfileScreen());
+        },
+      ),
+      GoRoute(
+        path: '/edit_username',
+        name: 'edit_username',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const EditUsernameScreen());
         },
       ),
       GoRoute(
