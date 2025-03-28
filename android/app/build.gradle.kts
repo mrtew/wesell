@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "com.example.wesell"
     // compileSdk = flutter.compileSdkVersion
-    compileSdk = 34
+    compileSdk = 35
     // ndkVersion = flutter.ndkVersion
     ndkVersion = "29.0.13113456"
 
@@ -31,7 +31,7 @@ android {
         // minSdk = flutter.minSdkVersion
         minSdk = 23
         // targetSdk = flutter.targetSdkVersion
-        targetSdk = 34
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
