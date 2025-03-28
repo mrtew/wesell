@@ -96,7 +96,7 @@ class _EditUsernameScreenState extends ConsumerState<EditUsernameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppBarWidget(
-        title: 'Edit Username',
+        title: 'Edit Name',
         showBackButton: true,
       ),
       body: Padding(

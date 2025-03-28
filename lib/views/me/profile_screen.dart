@@ -77,7 +77,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
-                    // GoRouter.of(context).push('/edit_avatar');
+                    GoRouter.of(context).push('/edit_avatar');
                   },
                   tileColor: Colors.white,
                 ),
@@ -91,7 +91,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 
                 // Name Section
                 ListTile(
-                  title: const Text('Username'),
+                  title: const Text('Name'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
