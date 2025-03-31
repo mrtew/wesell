@@ -71,7 +71,7 @@ class UserController {
         itemsSold: [],
         chats: [],
         transactions: [],
-        balance: 0.0,
+        balance: 0,
         pin: 0,
         createdAt: now,
         updatedAt: now,

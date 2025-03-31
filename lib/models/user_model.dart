@@ -18,7 +18,7 @@ class UserModel {
   final List<String> itemsSold;
   final List<String> chats;
   final List<String> transactions;
-  final double balance;
+  final int balance;
   final int pin;
   final Timestamp createdAt;
   final Timestamp updatedAt;
@@ -124,7 +124,7 @@ class UserModel {
     List<String>? itemsSold,
     List<String>? chats,
     List<String>? transactions,
-    double? balance,
+    int? balance,
     int? pin,
     Timestamp? createdAt,
     Timestamp? updatedAt,
