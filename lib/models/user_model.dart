@@ -12,7 +12,7 @@ class UserModel {
   final bool isPhoneNumberVerified;
   final bool isEmailVerified;
   final bool isIdentityVerified;
-  final List<Map<String, String>> addresses;
+  final List<Map<String, dynamic>> addresses;
   final List<String> itemsPosted;
   final List<String> itemsPurchased;
   final List<String> itemsSold;
@@ -64,7 +64,7 @@ class UserModel {
       isPhoneNumberVerified: data['isPhoneNumberVerified'],
       isEmailVerified: data['isEmailVerified'],
       isIdentityVerified: data['isIdentityVerified'],
-      addresses: List<Map<String, String>>.from(data['addresses']),
+      addresses: List<Map<String, dynamic>>.from(data['addresses']),
       itemsPosted: List<String>.from(data['itemsPosted']),
       itemsPurchased: List<String>.from(data['itemsPurchased']),
       itemsSold: List<String>.from(data['itemsSold']),
@@ -118,7 +118,7 @@ class UserModel {
     bool? isPhoneNumberVerified,
     bool? isEmailVerified,
     bool? isIdentityVerified,
-    List<Map<String, String>>? addresses,
+    List<Map<String, dynamic>>? addresses,
     List<String>? itemsPosted,
     List<String>? itemsPurchased,
     List<String>? itemsSold,

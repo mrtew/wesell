@@ -16,7 +16,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Future.microtask(() => ref.refresh(currentUserProvider));
+    Future.microtask(() => ref.refresh(currentUserProvider));
   }
 
   @override

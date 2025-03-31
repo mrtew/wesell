@@ -12,6 +12,10 @@ import '../providers/auth_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../views/me/profile_screen.dart';
 import '../views/me/setting_screen.dart';
+import '../views/addresses/addresses_screen.dart';
+import '../views/addresses/open_map_screen.dart';
+import '../views/addresses/add_address_screen.dart';
+import '../views/addresses/edit_address_screen.dart';
 
 // GoRouter Provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -119,6 +123,43 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'setting',
         pageBuilder: (context, state) {
           return MaterialPage(child: const SettingScreen());
+        },
+      ),
+      GoRoute(
+        path: '/addresses',
+        name: 'addresses',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const AddressesScreen());
+        },
+      ),
+      GoRoute(
+        path: '/open_map',
+        name: 'open_map',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const OpenMapScreen());
+        },
+      ),
+      GoRoute(
+        path: '/add_address/:city/:postalCode/:state/:country/:latitude/:longitude',
+        name: 'add_address',
+        pageBuilder: (context, state) {
+          return MaterialPage(
+            child: AddAddressScreen(
+              city: state.pathParameters['city'],
+              postalCode: state.pathParameters['postalCode'],
+              state_: state.pathParameters['state'],
+              country: state.pathParameters['country'],
+              latitude: double.tryParse(state.pathParameters['latitude'] ?? '0'),
+              longitude: double.tryParse(state.pathParameters['longitude'] ?? '0'),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/edit_address',
+        name: 'edit_address',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const EditAddressScreen());
         },
       ),
     ],

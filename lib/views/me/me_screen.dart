@@ -5,11 +5,22 @@ import '../../providers/user_provider.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
 
-class MeScreen extends ConsumerWidget {
+class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MeScreen> createState() => _MeScreenState();
+}
+
+class _MeScreenState extends ConsumerState<MeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.refresh(currentUserProvider));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppBarWidget(
         title: 'Me',
@@ -158,7 +169,16 @@ class MeScreen extends ConsumerWidget {
                   endIndent: 16,
                   color: Colors.grey[200],
                 ),
-                // Settings Button
+                ListTile(
+                  leading: const Icon(Icons.location_on_rounded, color: Colors.blue),
+                  title: const Text('My Addresses'),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    GoRouter.of(context).push('/addresses');
+                  },
+                  tileColor: Colors.white,
+                ),
                 Divider(
                   height: 1,
                   thickness: 1,
@@ -166,6 +186,7 @@ class MeScreen extends ConsumerWidget {
                   endIndent: 16,
                   color: Colors.grey[200],
                 ),
+                // Settings Button
                 ListTile(
                   leading: const Icon(Icons.settings, color: Colors.blue),
                   title: const Text('Setting'),
