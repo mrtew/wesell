@@ -41,6 +41,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+        }
+        debug {
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
 }
@@ -57,4 +61,6 @@ dependencies {
   implementation("com.google.firebase:firebase-analytics")
   // Add the dependencies for any other desired Firebase products
   // https://firebase.google.com/docs/android/setup#available-libraries
+  // Add AppCompat dependency for Stripe
+  implementation("androidx.appcompat:appcompat:1.6.1")
 }
