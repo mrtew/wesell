@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/user_provider.dart';
+import '../../utils/currency_formatter.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
+import '../../widgets/custom_dialog.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
@@ -127,6 +129,51 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                       ],
                     ),
                   ),
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
+                ListTile(
+                  leading: Icon(Icons.currency_exchange_rounded, color: Colors.yellow[600]),
+                  title: const Text('Wallet'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (user.pin != '') ...[
+                        Text(
+                          'RM${formatMoney(user!.balance)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+                    ],
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    if (user.pin == '') {
+                      showCustomDialog(
+                        context: context,
+                        title: "Pin is required",
+                        content: "Before using wallet feature, please set up your 6-digit pin number.",
+                        buttonText1: "Cancel",
+                        buttonText2: "Proceed",
+                        onPressed2: () {
+                          GoRouter.of(context).push('/new_pin_1');
+                        },
+                      );
+                    } else if (user.pin != ''){
+                      GoRouter.of(context).push('/balance');
+                    }
+                  },
+                  tileColor: Colors.white,
                 ),
                 Divider(
                   height: 1,

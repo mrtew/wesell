@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wesell/views/balance/balance_screen.dart';
+import 'package:wesell/views/pin/new_pin_1_screen.dart';
+import 'package:wesell/views/pin/new_pin_2_screen.dart';
+import 'package:wesell/views/pin/old_pin_screen.dart';
 import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
 import '../views/item/item_screen.dart';
@@ -160,6 +164,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'edit_address',
         pageBuilder: (context, state) {
           return MaterialPage(child: const EditAddressScreen());
+        },
+      ),
+      GoRoute(
+        path: '/new_pin_1',
+        name: 'new_pin_1',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const NewPin1Screen());
+        },
+      ),
+      GoRoute(
+        path: '/new_pin_2',
+        name: 'new_pin_2',
+        pageBuilder: (context, state) {
+          final pin = state.extra as String;
+          return MaterialPage(child: NewPin2Screen(pin: pin));
+        },
+      ),
+      GoRoute(
+        path: '/old_pin',
+        name: 'old_pin',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const OldPinScreen());
+        },
+      ),
+      GoRoute(
+        path: '/balance',
+        name: 'balance',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const BalanceScreen());
         },
       ),
     ],

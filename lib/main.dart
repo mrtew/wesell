@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'routes/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'config/stripe_config.dart';
 
 void main() async {
   // Ensure Flutter widgets are initialized before Firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  
+  // Initialize Stripe
+  await StripeConfig.init();
+  
   // Run the app wrapped in ProviderScope for Riverpod state management
   runApp(
     const ProviderScope(
