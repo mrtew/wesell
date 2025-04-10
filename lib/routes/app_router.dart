@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wesell/views/balance/balance_screen.dart';
+import 'package:wesell/views/identity/verification_method.dart';
 import 'package:wesell/views/pin/new_pin_1_screen.dart';
 import 'package:wesell/views/pin/new_pin_2_screen.dart';
 import 'package:wesell/views/pin/old_pin_screen.dart';
@@ -20,6 +21,8 @@ import '../views/addresses/addresses_screen.dart';
 import '../views/addresses/open_map_screen.dart';
 import '../views/addresses/add_address_screen.dart';
 import '../views/addresses/edit_address_screen.dart';
+import '../views/identity/mykad_verification_screen.dart';
+import '../views/identity/passport_verification_screen.dart';
 
 // GoRouter Provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -193,6 +196,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'balance',
         pageBuilder: (context, state) {
           return MaterialPage(child: const BalanceScreen());
+        },
+      ),
+      GoRoute(
+        path: '/verification_method',
+        name: 'verification_method',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const VerificationMethodScreen());
+        },
+      ),
+      GoRoute(
+        path: '/mykad_verification',
+        name: 'mykad_verification',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const MyKadVerificationScreen());
+        },
+      ),
+      GoRoute(
+        path: '/passport_verification',
+        name: 'passport_verification',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const PassportVerificationScreen());
         },
       ),
     ],

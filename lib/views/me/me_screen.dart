@@ -147,7 +147,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                         Text(
                           'RM${formatMoney(user!.balance)}',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Colors.grey[400],
                           ),
                         ),
@@ -193,7 +193,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                       Text(
                         '${user!.phoneNumber.substring(0, 6)}${'*' * (user.phoneNumber.length - 8)}${user.phoneNumber.substring(user.phoneNumber.length - 2)}',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[400],
                         ),
                       ),
@@ -207,6 +207,60 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   // onTap: () {
                   //
                   // },
+                  tileColor: Colors.white,
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
+                ListTile(
+                  leading: const Icon(Icons.perm_identity_rounded, color: Colors.blue),
+                  title: const Text('Identity Verification'),
+                  // trailing: Icon(Icons.verified_rounded, size: 16, color: Colors.green),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (user.identity.isNotEmpty && user.isIdentityVerified == false)
+                        Text(
+                          'Uploaded',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      if (user.identity.isNotEmpty && user.isIdentityVerified == true && user.identity['type'] == 'mykad')
+                        Text(
+                          'MyKad',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      if (user.identity.isNotEmpty && user.isIdentityVerified == true && user.identity['type'] == 'passport')
+                        Text(
+                          'Passport',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      if (user.isIdentityVerified == true)
+                        Icon(Icons.verified_rounded, size: 16, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+                    ],
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    if (user.identity.isEmpty && user.isIdentityVerified == false ) {
+                      GoRouter.of(context).push('/verification_method');
+                    } else {
+                    }
+                  },
                   tileColor: Colors.white,
                 ),
                 Divider(
