@@ -38,22 +38,22 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
               endIndent: 16,
               color: Colors.grey[200],
             ),
-            ListTile(
-              title: const Text('Profile'),
-              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-              onTap: () {
-                GoRouter.of(context).push('/profile');
-              },
-              tileColor: Colors.white,
-            ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 16,
-              endIndent: 16,
-              color: Colors.grey[200],
-            ),
+            // ListTile(
+            //   title: const Text('Profile'),
+            //   trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+            //   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            //   onTap: () {
+            //     GoRouter.of(context).push('/profile');
+            //   },
+            //   tileColor: Colors.white,
+            // ),
+            // Divider(
+            //   height: 1,
+            //   thickness: 1,
+            //   indent: 16,
+            //   endIndent: 16,
+            //   color: Colors.grey[200],
+            // ),
             ListTile(
               title: const Text('Logout'),
               trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
