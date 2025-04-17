@@ -11,7 +11,7 @@ class ItemModel {
   final List<String> images;
   final String status; // 'available', 'sold', etc.
   final Timestamp createdAt;
-  final Timestamp updatedAt;
+  final Timestamp? updatedAt;
   final Timestamp? deletedAt;
   final Map<String, dynamic>? imageMetadata; // For future image search feature
 
@@ -26,7 +26,7 @@ class ItemModel {
     required this.images,
     required this.status,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
     this.deletedAt,
     this.imageMetadata,
   });

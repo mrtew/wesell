@@ -30,4 +30,30 @@ final currentUserProvider = FutureProvider.autoDispose<dynamic>((ref) async {
 final userLoadingProvider = StateProvider<bool>((ref) => false);
 
 // Provider for user error messages
-final userErrorProvider = StateProvider<String?>((ref) => null); 
+final userErrorProvider = StateProvider<String?>((ref) => null);
+
+// Cache for seller information to prevent repeated fetches
+final sellerCacheProvider = StateProvider<Map<String, dynamic>>((ref) => {});
+
+// Provider to get seller by ID with caching
+final sellerByIdProvider = FutureProvider.family<dynamic, String>((ref, sellerId) async {
+  // Check if seller data is already cached
+  final cache = ref.watch(sellerCacheProvider);
+  if (cache.containsKey(sellerId)) {
+    return cache[sellerId];
+  }
+  
+  // If not cached, fetch from database
+  final userController = ref.read(userControllerProvider);
+  final seller = await userController.getUserById(sellerId);
+  
+  // Add to cache if seller was found
+  if (seller != null) {
+    ref.read(sellerCacheProvider.notifier).update((state) => {
+      ...state,
+      sellerId: seller,
+    });
+  }
+  
+  return seller;
+}); 
