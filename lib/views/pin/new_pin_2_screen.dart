@@ -71,7 +71,7 @@ class _NewPin2ScreenState extends ConsumerState<NewPin2Screen> {
         
         try {
           await userController.updateUser(updatedUser);
-          
+          await Future.microtask(() => ref.refresh(currentUserProvider));
           showCustomDialog(
             context: context,
             title: "Success",
