@@ -41,12 +41,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
-      if (!_isLoadingMore) {
+    // Check if we've scrolled near the bottom and have items to load
+    if (!_isLoadingMore && 
+        _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final homeItems = ref.read(homeItemsProvider);
+      
+      // Only try to load more if we currently have items and aren't in an error state
+      if (homeItems.hasValue && homeItems.value!.isNotEmpty) {
         setState(() => _isLoadingMore = true);
         ref.read(homeItemsProvider.notifier).loadMoreItems().then((_) {
           if (mounted) {
             setState(() => _isLoadingMore = false);
+          }
+        }).catchError((error) {
+          if (mounted) {
+            setState(() => _isLoadingMore = false);
+            // Optionally show an error message
           }
         });
       }
@@ -60,85 +70,126 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: 'WeSell',
         showBackButton: false,
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.read(homeItemsProvider.notifier).refresh();
-          return Future<void>.value();
-        },
-        child: Column(
-          children: [
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search items...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.camera_alt),
-                    onPressed: () {
-                      // TODO: Implement image search
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      body: Column(
+        children: [
+          // Fixed Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search items...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.camera_alt),
+                  onPressed: () {
+                    // TODO: Implement image search
+                  },
                 ),
-                onTap: () {
-                  // TODO: Implement search
-                },
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
               ),
+              onTap: () {
+                // TODO: Implement search
+              },
             ),
-            // Items Grid
-            Expanded(
-              child: ref.watch(homeItemsProvider).when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stackTrace) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Error: ${error.toString().split('\n').first}'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          ref.read(homeItemsProvider.notifier).refresh();
-                        },
-                        child: const Text('Try Again'),
-                      ),
-                    ],
-                  ),
-                ),
-                data: (items) {
-                  if (items.isEmpty) {
-                    return const Center(child: Text('No items found'));
-                  }
-                  return GridView.builder(
+          ),
+          
+          // Scrollable Content
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.read(homeItemsProvider.notifier).refresh();
+                return Future<void>.value();
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.55, // Make cards taller to avoid overflow
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: ref.watch(homeItemsProvider).when(
+                        loading: () => SizedBox(
+                          height: constraints.maxHeight,
+                          child: const Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (error, stackTrace) => SizedBox(
+                          height: constraints.maxHeight,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Error: ${error.toString().split('\n').first}'),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    ref.read(homeItemsProvider.notifier).refresh();
+                                  },
+                                  child: const Text('Try Again'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        data: (items) {
+                          if (items.isEmpty) {
+                            return SizedBox(
+                              height: constraints.maxHeight,
+                              child: const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'No items found',
+                                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Pull down to refresh',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.55, // Make cards taller to avoid overflow
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: items.length + (_isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == items.length) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              final item = items[index];
+                              return _ItemCard(item: item);
+                            },
+                          );
+                        },
+                      ),
                     ),
-                    itemCount: items.length + (_isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == items.length) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      final item = items[index];
-                      return _ItemCard(item: item);
-                    },
                   );
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: const BottomNavBar(),
     );
