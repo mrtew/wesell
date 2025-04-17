@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../providers/item_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/currency_formatter.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -294,6 +295,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
                     GoRouter.of(context).push('/items_post');
+                    ref.read(userPostedItemsProvider.notifier).refresh();
                   },
                   tileColor: Colors.white,
                 ),
@@ -311,6 +313,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
                     GoRouter.of(context).push('/items_purchased');
+                    ref.read(userPurchasedItemsProvider.notifier).refresh();
                   },
                   tileColor: Colors.white,
                 ),
@@ -328,6 +331,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
                     GoRouter.of(context).push('/items_sold');
+                    ref.read(userSoldItemsProvider.notifier).refresh();
                   },
                   tileColor: Colors.white,
                 ),
