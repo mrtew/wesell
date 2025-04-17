@@ -23,6 +23,9 @@ import '../views/addresses/add_address_screen.dart';
 import '../views/addresses/edit_address_screen.dart';
 import '../views/identity/mykad_verification_screen.dart';
 import '../views/identity/passport_verification_screen.dart';
+import '../views/items/item_posted_screen.dart';
+import '../views/items/item_purchased_screen.dart';
+import '../views/items/item_sold_screen.dart';
 
 // GoRouter Provider
 final routerProvider = Provider<GoRouter>((ref) {
@@ -217,6 +220,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'passport_verification',
         pageBuilder: (context, state) {
           return MaterialPage(child: const PassportVerificationScreen());
+        },
+      ),
+      GoRoute(
+        path: '/items_post',
+        name: 'items_post',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const ItemPostedScreen());
+        },
+      ),
+      GoRoute(
+        path: '/items_purchased',
+        name: 'items_purchased',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const ItemPurchasedScreen());
+        },
+      ),
+      GoRoute(
+        path: '/items_sold',
+        name: 'items_sold',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const ItemSoldScreen());
         },
       ),
     ],

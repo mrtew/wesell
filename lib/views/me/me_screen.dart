@@ -287,6 +287,57 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                   endIndent: 16,
                   color: Colors.grey[200],
                 ),
+                ListTile(
+                  leading: const Icon(Icons.category, color: Colors.blue),
+                  title: const Text('Item Posted'),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    GoRouter.of(context).push('/items_post');
+                  },
+                  tileColor: Colors.white,
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
+                ListTile(
+                  leading: const Icon(Icons.shopping_cart_rounded, color: Colors.blue),
+                  title: const Text('Item Purchased'),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    GoRouter.of(context).push('/items_purchased');
+                  },
+                  tileColor: Colors.white,
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
+                ListTile(
+                  leading: const Icon(Icons.sell_rounded, color: Colors.blue),
+                  title: const Text('Items Sold'),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  onTap: () {
+                    GoRouter.of(context).push('/items_sold');
+                  },
+                  tileColor: Colors.white,
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
                 // Settings Button
                 ListTile(
                   leading: const Icon(Icons.settings, color: Colors.blue),
