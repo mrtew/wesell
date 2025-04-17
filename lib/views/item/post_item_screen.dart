@@ -122,6 +122,8 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
             const SnackBar(content: Text('Item posted successfully!')),
           );
           await Future.microtask(() => ref.refresh(currentUserProvider));
+          ref.read(homeItemsProvider.notifier).refresh();
+          ref.read(userPostedItemsProvider.notifier).refresh();
           // Clear form
           // _formKey.currentState!.reset();
           setState(() {

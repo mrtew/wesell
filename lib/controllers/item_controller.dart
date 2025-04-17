@@ -171,4 +171,120 @@ class ItemController {
       throw Exception('Failed to get item: $e');
     }
   }
+  
+  // Delete an item
+  Future<void> deleteItem(String itemId) async {
+    try {
+      // Get the item to retrieve its images and seller
+      DocumentSnapshot doc = await _itemsCollection.doc(itemId).get();
+      if (!doc.exists) {
+        throw Exception('Item not found');
+      }
+      
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      String sellerId = data['sellerId'];
+      // List<String> imageUrls = List<String>.from(data['images']);
+      
+      // // Delete images from storage
+      // for (String imageUrl in imageUrls) {
+      //   try {
+      //     // Extract the storage reference from the URL
+      //     // Firebase storage URLs have a format like:
+      //     // https://firebasestorage.googleapis.com/v0/b/[PROJECT_ID].appspot.com/o/[PATH]?alt=media&token=[TOKEN]
+      //     Uri uri = Uri.parse(imageUrl);
+      //     String path = Uri.decodeComponent(uri.path.split('/o/')[1]);
+      //     await _storage.ref(path).delete();
+      //   } catch (e) {
+      //     // Log error but continue with deletion process
+      //     print('Error deleting image: $e');
+      //   }
+      // }
+      
+      // Update user's itemsPosted array
+      await _usersCollection.doc(sellerId).update({
+        'itemsPosted': FieldValue.arrayRemove([itemId]),
+      });
+      
+      // Soft delete by updating status to 'deleted' and setting deletedAt timestamp
+      await _itemsCollection.doc(itemId).update({
+        'status': 'deleted',
+        'deletedAt': Timestamp.now(),
+      });
+      
+    } catch (e) {
+      throw Exception('Failed to delete item: $e');
+    }
+  }
+  
+  // Update an existing item
+  Future<void> updateItem({
+    required String itemId,
+    required String title,
+    required String description,
+    required String category,
+    required double originalPrice,
+    required double price,
+    List<File>? newImages,
+    List<String>? removedImageUrls,
+    List<String>? existingImageUrls,
+  }) async {
+    try {
+      // Get the existing item
+      DocumentSnapshot doc = await _itemsCollection.doc(itemId).get();
+      if (!doc.exists) {
+        throw Exception('Item not found');
+      }
+      
+      // Convert prices to integers (storing in smallest currency unit, e.g., cents)
+      final int originalPriceInt = (originalPrice * 100).round();
+      final int priceInt = (price * 100).round();
+      
+      // Get seller ID from existing item
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      String sellerId = data['sellerId'];
+      
+      // Process images
+      List<String> finalImageUrls = [];
+      
+      // Add existing images that weren't removed
+      if (existingImageUrls != null && existingImageUrls.isNotEmpty) {
+        finalImageUrls.addAll(existingImageUrls);
+      }
+      
+      // Delete removed images from storage
+      // if (removedImageUrls != null && removedImageUrls.isNotEmpty) {
+      //   for (String imageUrl in removedImageUrls) {
+      //     try {
+      //       // Extract the storage reference from the URL
+      //       Uri uri = Uri.parse(imageUrl);
+      //       String path = Uri.decodeComponent(uri.path.split('/o/')[1]);
+      //       await _storage.ref(path).delete();
+      //     } catch (e) {
+      //       // Log error but continue with update process
+      //       print('Error deleting removed image: $e');
+      //     }
+      //   }
+      // }
+      
+      // Upload new images
+      if (newImages != null && newImages.isNotEmpty) {
+        List<String> newImageUrls = await _uploadImages(sellerId, newImages);
+        finalImageUrls.addAll(newImageUrls);
+      }
+      
+      // Update item in Firestore
+      await _itemsCollection.doc(itemId).update({
+        'title': title,
+        'description': description,
+        'category': category,
+        'originalPrice': originalPriceInt,
+        'price': priceInt,
+        'images': finalImageUrls,
+        'updatedAt': Timestamp.now(),
+      });
+      
+    } catch (e) {
+      throw Exception('Failed to update item: $e');
+    }
+  }
 } 

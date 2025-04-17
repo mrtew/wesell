@@ -290,7 +290,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.category, color: Colors.blue),
-                  title: const Text('Item Posted'),
+                  title: const Text('Items Posted'),
                   trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
@@ -308,7 +308,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.shopping_cart_rounded, color: Colors.blue),
-                  title: const Text('Item Purchased'),
+                  title: const Text('Items Purchased'),
                   trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   onTap: () {
