@@ -50,10 +50,10 @@ class BottomNavBar extends ConsumerWidget {
               color: currentIndex == 1 ? Colors.green : Colors.grey,
             ),
             activeIcon: const Icon(
-              Icons.category,
+              Icons.add,
               color: Colors.green,
             ),
-            label: 'Item',
+            label: 'Post Item',
           ),
           BottomNavigationBarItem(
             icon: Icon(

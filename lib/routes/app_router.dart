@@ -8,7 +8,7 @@ import 'package:wesell/views/pin/new_pin_2_screen.dart';
 import 'package:wesell/views/pin/old_pin_screen.dart';
 import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
-import '../views/item/item_screen.dart';
+import '../views/item/post_item_screen.dart';
 import '../views/chat/chat_screen.dart';
 import '../views/me/edit_username_screen.dart';
 import '../views/me/edit_avatar_screen.dart';
@@ -79,7 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ref.read(currentTabProvider.notifier).state = 1;
           });
-          return MaterialPage(child: const ItemScreen());
+          return MaterialPage(child: const PostItemScreen());
         },
       ),
       GoRoute(
