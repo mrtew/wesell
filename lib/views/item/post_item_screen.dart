@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../utils/categories.dart';
@@ -120,6 +121,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Item posted successfully!')),
           );
+          await Future.microtask(() => ref.refresh(currentUserProvider));
           // Clear form
           // _formKey.currentState!.reset();
           setState(() {
