@@ -106,10 +106,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        seller.username.isNotEmpty ? seller.username : 'User',
-                        style: const TextStyle(fontSize: 16),
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        children: [
+                          Text(
+                            seller.username.isNotEmpty ? seller.username : 'User',
+                            style: const TextStyle(fontSize: 16),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if(seller.isIdentityVerified == true)
+                          SizedBox(width: 10),
+                          if(seller.isIdentityVerified == true)
+                          Icon(
+                            Icons.verified_rounded,
+                            size: 18,
+                            color: Colors.blue[300],
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -156,7 +168,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 color: Colors.grey[300],
-                                child: const Center(child: CircularProgressIndicator()),
+                                // child: const Center(child: CircularProgressIndicator()),
                               ),
                               errorWidget: (context, url, error) => Container(
                                 color: Colors.grey[300],

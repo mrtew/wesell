@@ -96,12 +96,24 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                '${user?.username}',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${user?.username}',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if(user.isIdentityVerified == true)
+                                  SizedBox(width: 10),
+                                  if(user.isIdentityVerified == true)
+                                  Icon(
+                                    Icons.verified_rounded,
+                                    size: 18,
+                                    color: Colors.blue[300],
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 8),
                               Text(

@@ -194,6 +194,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          // Admin button
+          TextButton(
+            onPressed: () => context.go('/admin/login'),
+            child: const Text(
+              'Admin?',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

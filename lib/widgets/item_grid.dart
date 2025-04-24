@@ -200,14 +200,26 @@ class SellerInfo extends ConsumerWidget {
             ),
             const SizedBox(width: 4),
             Expanded(
-              child: Text(
-                seller.username.isNotEmpty ? seller.username : 'User',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+              child: Row(
+                children: [
+                  Text(
+                    seller.username.isNotEmpty ? seller.username : 'User',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  if(seller.isIdentityVerified == true)
+                  SizedBox(width: 10),
+                  if(seller.isIdentityVerified == true)
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 18,
+                    color: Colors.blue[300],
+                  ),
+                ],
               ),
             ),
           ],

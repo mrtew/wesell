@@ -28,32 +28,69 @@ import '../views/identity/passport_verification_screen.dart';
 import '../views/items/item_posted_screen.dart';
 import '../views/items/item_purchased_screen.dart';
 import '../views/items/item_sold_screen.dart';
+import '../views/admin/admin_login_screen.dart';
+import '../views/admin/admin_home_screen.dart';
+import '../views/admin/user_list_screen.dart';
+import '../views/admin/verify_user_screen.dart';
+import '../providers/admin_provider.dart';
 
 // GoRouter Provider
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authUserProvider);
+  final adminState = ref.watch(adminAuthProvider);
   
   return GoRouter(
     initialLocation: '/login',
     debugLogDiagnostics: true,
     redirect: (BuildContext context, GoRouterState state) {
-      // Get auth state
+      // Get auth states
       final isLoggedIn = authState.when(
         data: (user) => user != null,
         loading: () => false,
         error: (_, __) => false,
       );
       
-      final isGoingToLogin = state.uri.path == '/login';
+      final isAdminLoggedIn = adminState != null;
+      final path = state.uri.path;
       
-      // If not logged in and not going to login page, redirect to login
-      if (!isLoggedIn && !isGoingToLogin) {
-        return '/login';
+      // Simple debug
+      print('Navigation path: $path, Admin: $isAdminLoggedIn, User: $isLoggedIn');
+      
+      // Rule 1: Admin routes
+      if (path.startsWith('/admin/')) {
+        // If going to admin login, no redirection needed
+        if (path == '/admin/login') {
+          return null;
+        }
+        
+        // If not admin and trying to access admin routes, redirect to admin login
+        if (!isAdminLoggedIn) {
+          return '/admin/login';
+        }
+        
+        // Admin is logged in and accessing admin routes - allow
+        return null;
       }
       
-      // If logged in and going to login page, redirect to home
-      if (isLoggedIn && isGoingToLogin) {
-        return '/home';
+      // Rule 2: User authentication
+      if (path == '/login') {
+        // If admin is logged in, redirect to admin home
+        if (isAdminLoggedIn) {
+          return '/admin/home';
+        }
+        
+        // If user is logged in, redirect to home
+        if (isLoggedIn) {
+          return '/home';
+        }
+        
+        // Not logged in and trying to access login - allow
+        return null;
+      }
+      
+      // Rule 3: Protected routes
+      if (!isLoggedIn && !path.startsWith('/admin/')) {
+        return '/login';
       }
       
       // No redirection needed
@@ -259,6 +296,36 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'items_sold',
         pageBuilder: (context, state) {
           return MaterialPage(child: const ItemSoldScreen());
+        },
+      ),
+      // Admin routes
+      GoRoute(
+        path: '/admin/login',
+        name: 'admin_login',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const AdminLoginScreen());
+        },
+      ),
+      GoRoute(
+        path: '/admin/home',
+        name: 'admin_home',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const AdminHomeScreen());
+        },
+      ),
+      GoRoute(
+        path: '/admin/users',
+        name: 'admin_users',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const UserListScreen());
+        },
+      ),
+      GoRoute(
+        path: '/admin/verify/:userId',
+        name: 'verify_user',
+        pageBuilder: (context, state) {
+          final userId = state.pathParameters['userId']!;
+          return MaterialPage(child: VerifyUserScreen(userId: userId));
         },
       ),
     ],
