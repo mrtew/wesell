@@ -420,6 +420,8 @@ class _MyKadVerificationScreenState extends ConsumerState<MyKadVerificationScree
             blockText.contains('MALAYSIA') ||
             blockText.contains('KAD PENGENALAN') ||
             blockText.contains('KADPENGENALAN') ||
+            blockText.contains('TDENTITY') ||
+            blockText.contains('IDENTITY') ||
             blockText.contains('MYKAD')) {
           continue;
         }
