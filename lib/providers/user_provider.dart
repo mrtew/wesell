@@ -35,6 +35,20 @@ final userErrorProvider = StateProvider<String?>((ref) => null);
 // Cache for seller information to prevent repeated fetches
 final sellerCacheProvider = StateProvider<Map<String, dynamic>>((ref) => {});
 
+// Function to clear the seller cache for a specific seller
+void clearSellerCache(WidgetRef ref, String sellerId) {
+  ref.read(sellerCacheProvider.notifier).update((state) {
+    final newState = Map<String, dynamic>.from(state);
+    newState.remove(sellerId);
+    return newState;
+  });
+}
+
+// Function to clear all seller cache
+void clearAllSellerCache(WidgetRef ref) {
+  ref.read(sellerCacheProvider.notifier).state = {};
+}
+
 // Provider to get seller by ID with caching
 final sellerByIdProvider = FutureProvider.family<dynamic, String>((ref, sellerId) async {
   // Check if seller data is already cached

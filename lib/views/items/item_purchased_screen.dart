@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/item_grid.dart';
 import '../../providers/item_provider.dart';
+import '../../providers/user_provider.dart';
 
 class ItemPurchasedScreen extends ConsumerStatefulWidget {
   const ItemPurchasedScreen({super.key});
@@ -18,6 +19,11 @@ class _ItemPurchasedScreenState extends ConsumerState<ItemPurchasedScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Clear all seller cache when screen loads to ensure verification status is up-to-date
+    Future.microtask(() {
+      clearAllSellerCache(ref);
+    });
     
     // Add scroll listener for infinite scroll
     _scrollController.addListener(_onScroll);

@@ -104,6 +104,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.read(homeItemsProvider.notifier).refresh();
+                clearAllSellerCache(ref);
                 return Future<void>.value();
               },
               child: LayoutBuilder(
