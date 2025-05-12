@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
+import 'package:wesell/views/chat/chat_screen.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/currency_formatter.dart';
@@ -21,6 +22,7 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
 class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
+  final _chatIcon = false;
 
   @override
   void dispose() {
@@ -78,10 +80,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             currentUserAsync.hasValue && 
             item.status == 'available';
 
+        // Only show chat icon if the user is authenticated, not the owner, and authentication check is complete
+        final bool showChatIcon = currentUserAsync.maybeWhen(
+          data: (user) => user != null && !isOwner,
+          orElse: () => false,
+        );
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               onPressed: () => GoRouter.of(context).pop(),
             ),
             title: ref.watch(sellerByIdProvider(item.sellerId)).when(
@@ -128,9 +136,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 );
               },
             ),
-            actions: [
+            actions: showChatIcon ? [
               IconButton(
-                icon: const Icon(Icons.chat_bubble_outline),
+                icon: const Icon(Icons.chat_bubble_outline_rounded),
                 onPressed: () {
                   // Chat feature will be implemented later
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +146,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   );
                 },
               ),
-            ],
+            ] : [],
           ),
           body: SingleChildScrollView(
             child: Column(
