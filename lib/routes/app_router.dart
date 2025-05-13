@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,8 @@ import '../views/admin/admin_login_screen.dart';
 import '../views/admin/admin_home_screen.dart';
 import '../views/admin/user_list_screen.dart';
 import '../views/admin/verify_user_screen.dart';
+import '../views/search/text_search_screen.dart';
+import '../views/search/image_search_screen.dart';
 import '../providers/admin_provider.dart';
 
 // GoRouter Provider
@@ -326,6 +329,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           final userId = state.pathParameters['userId']!;
           return MaterialPage(child: VerifyUserScreen(userId: userId));
+        },
+      ),
+      // Search routes
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        pageBuilder: (context, state) {
+          final query = state.uri.queryParameters['q'] ?? '';
+          return MaterialPage(child: TextSearchScreen(initialQuery: query));
+        },
+      ),
+      GoRoute(
+        path: '/search/image',
+        name: 'image_search',
+        pageBuilder: (context, state) {
+          final imageFile = state.extra as File;
+          return MaterialPage(child: ImageSearchScreen(imageFile: imageFile));
         },
       ),
     ],

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
+import '../../widgets/search_bar_widget.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/currency_formatter.dart';
@@ -75,26 +77,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Fixed Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search items...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.camera_alt),
-                  onPressed: () {
-                    // TODO: Implement image search
-                  },
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-              ),
+            child: SearchBarWidget(
+              showCameraIcon: true,
+              readOnly: true,
               onTap: () {
-                // TODO: Implement search
+                // Navigate to search screen with empty query
+                GoRouter.of(context).push('/search');
+              },
+              onCameraPressed: () async {
+                // Open image picker
+                final ImagePicker picker = ImagePicker();
+                final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                
+                if (pickedFile != null && mounted) {
+                  // Navigate to image search screen with picked image
+                  GoRouter.of(context).push('/search/image', extra: File(pickedFile.path));
+                }
               },
             ),
           ),
