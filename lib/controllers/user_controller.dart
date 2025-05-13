@@ -57,7 +57,7 @@ class UserController {
         uid: userId,
         userId: userId,
         role: 'user',
-        username: '',
+        username: 'New User',
         avatar: '',
         phoneNumber: phoneNumber,
         email: '',
