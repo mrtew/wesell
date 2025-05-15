@@ -123,7 +123,8 @@ class ItemController {
         if (imageFiles.length > 1) {
           List<Map<String, dynamic>> additionalImagesLabels = [];
           
-          for (int i = 1; i < imageFiles.length && i < 3; i++) {
+          // for (int i = 1; i < imageFiles.length && i < 3; i++) {
+          for (int i = 1; i < imageFiles.length; i++) {
             final additionalImage = InputImage.fromFile(imageFiles[i]);
             final additionalLabeler = ImageLabeler(
               options: ImageLabelerOptions(confidenceThreshold: 0.7),
