@@ -81,4 +81,29 @@ class UserController {
       return newUser;
     }
   }
+  
+  // Add a chat ID to user's chats array
+  Future<void> addChatToUser(String userId, String chatId) async {
+    try {
+      // Get the current user data
+      UserModel? user = await getUserById(userId);
+      if (user == null) {
+        throw Exception('User not found');
+      }
+      
+      // Check if chat already exists in user's chat list
+      if (!user.chats.contains(chatId)) {
+        List<String> updatedChats = List.from(user.chats);
+        updatedChats.add(chatId);
+        
+        // Update user document
+        await _usersCollection.doc(userId).update({
+          'chats': updatedChats,
+          'updatedAt': Timestamp.now(),
+        });
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 } 

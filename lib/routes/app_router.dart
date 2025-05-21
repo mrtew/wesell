@@ -13,6 +13,7 @@ import '../views/item/post_item_screen.dart';
 import '../views/item/item_detail_screen.dart';
 import '../views/item/edit_item_screen.dart';
 import '../views/chat/chat_screen.dart';
+import '../views/chat/chat_detail_screen.dart';
 import '../views/me/edit_username_screen.dart';
 import '../views/me/edit_avatar_screen.dart';
 import '../views/me/me_screen.dart';
@@ -152,6 +153,30 @@ final routerProvider = Provider<GoRouter>((ref) {
             ref.read(currentTabProvider.notifier).state = 2;
           });
           return MaterialPage(child: const ChatScreen());
+        },
+      ),
+      GoRoute(
+        path: '/chat/new/:sellerId',
+        name: 'new_chat',
+        builder: (context, state) {
+          final sellerId = state.pathParameters['sellerId']!;
+          // Use a unique ValueKey based on the sellerId to ensure a new widget is created
+          return ChatDetailScreen(
+            sellerId: sellerId,
+            key: ValueKey('chat_new_$sellerId'),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/chat/:chatId',
+        name: 'chat_detail',
+        builder: (context, state) {
+          final chatId = state.pathParameters['chatId']!;
+          // Use a unique ValueKey based on the chatId to ensure a new widget is created
+          return ChatDetailScreen(
+            chatId: chatId,
+            key: ValueKey('chat_detail_$chatId'),
+          );
         },
       ),
       GoRoute(

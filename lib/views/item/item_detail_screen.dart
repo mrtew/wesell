@@ -88,6 +88,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            elevation: 2,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               onPressed: () => GoRouter.of(context).pop(),
@@ -140,10 +141,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               IconButton(
                 icon: const Icon(Icons.chat_bubble_outline_rounded),
                 onPressed: () {
-                  // Chat feature will be implemented later
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chat feature coming soon')),
-                  );
+                  // Navigate to the chat screen with this seller
+                  GoRouter.of(context).push('/chat/new/${item.sellerId}');
                 },
               ),
             ] : [],
