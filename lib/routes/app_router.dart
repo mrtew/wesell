@@ -4,6 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wesell/views/balance/balance_screen.dart';
 import 'package:wesell/views/identity/verification_method_screen.dart';
+import 'package:wesell/views/payment/address_confirm_screen.dart';
+import 'package:wesell/views/payment/card_payment_screen.dart';
+import 'package:wesell/views/payment/payment_failed_screen.dart';
+import 'package:wesell/views/payment/payment_method_screen.dart';
+import 'package:wesell/views/payment/payment_success_screen.dart';
+import 'package:wesell/views/payment/verify_pin_screen.dart';
 import 'package:wesell/views/pin/new_pin_1_screen.dart';
 import 'package:wesell/views/pin/new_pin_2_screen.dart';
 import 'package:wesell/views/pin/old_pin_screen.dart';
@@ -42,7 +48,7 @@ import '../providers/admin_provider.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authUserProvider);
   final adminState = ref.watch(adminAuthProvider);
-  
+
   return GoRouter(
     initialLocation: '/login',
     debugLogDiagnostics: true,
@@ -53,50 +59,52 @@ final routerProvider = Provider<GoRouter>((ref) {
         loading: () => false,
         error: (_, __) => false,
       );
-      
+
       final isAdminLoggedIn = adminState != null;
       final path = state.uri.path;
-      
+
       // Simple debug
-      print('Navigation path: $path, Admin: $isAdminLoggedIn, User: $isLoggedIn');
-      
+      print(
+        'Navigation path: $path, Admin: $isAdminLoggedIn, User: $isLoggedIn',
+      );
+
       // Rule 1: Admin routes
       if (path.startsWith('/admin/')) {
         // If going to admin login, no redirection needed
         if (path == '/admin/login') {
           return null;
         }
-        
+
         // If not admin and trying to access admin routes, redirect to admin login
         if (!isAdminLoggedIn) {
           return '/admin/login';
         }
-        
+
         // Admin is logged in and accessing admin routes - allow
         return null;
       }
-      
+
       // Rule 2: User authentication
       if (path == '/login') {
         // If admin is logged in, redirect to admin home
         if (isAdminLoggedIn) {
           return '/admin/home';
         }
-        
+
         // If user is logged in, redirect to home
         if (isLoggedIn) {
           return '/home';
         }
-        
+
         // Not logged in and trying to access login - allow
         return null;
       }
-      
+
       // Rule 3: Protected routes
       if (!isLoggedIn && !path.startsWith('/admin/')) {
         return '/login';
       }
-      
+
       // No redirection needed
       return null;
     },
@@ -233,7 +241,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/add_address/:city/:postalCode/:state/:country/:latitude/:longitude',
+        path:
+            '/add_address/:city/:postalCode/:state/:country/:latitude/:longitude',
         name: 'add_address',
         pageBuilder: (context, state) {
           return MaterialPage(
@@ -242,8 +251,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               postalCode: state.pathParameters['postalCode'],
               state_: state.pathParameters['state'],
               country: state.pathParameters['country'],
-              latitude: double.tryParse(state.pathParameters['latitude'] ?? '0'),
-              longitude: double.tryParse(state.pathParameters['longitude'] ?? '0'),
+              latitude: double.tryParse(
+                state.pathParameters['latitude'] ?? '0',
+              ),
+              longitude: double.tryParse(
+                state.pathParameters['longitude'] ?? '0',
+              ),
             ),
           );
         },
@@ -282,6 +295,67 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'balance',
         pageBuilder: (context, state) {
           return MaterialPage(child: const BalanceScreen());
+        },
+      ),
+      // Payment Routes
+      // Success and Failed screens first (most specific routes)
+      GoRoute(
+        path: '/payment/success',
+        name: 'payment_success',
+        builder: (context, state) {
+          final paymentData = state.extra as Map<String, dynamic>;
+          return PaymentSuccessScreen(paymentData: paymentData);
+        },
+      ),
+      GoRoute(
+        path: '/payment/failed',
+        name: 'payment_failed',
+        builder: (context, state) {
+          final itemId = state.extra as String;
+          return PaymentFailedScreen(itemId: itemId);
+        },
+      ),
+      // Then item-specific routes
+      GoRoute(
+        path: '/payment/:itemId/card_payment',
+        name: 'card_payment',
+        builder: (context, state) {
+          final itemId = state.pathParameters['itemId']!;
+          final deliveryAddress = state.extra as Map<String, dynamic>;
+          return CardPaymentScreen(
+            itemId: itemId,
+            deliveryAddress: deliveryAddress,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/payment/:itemId/verify_pin',
+        name: 'verify_pin',
+        builder: (context, state) {
+          final itemId = state.pathParameters['itemId']!;
+          final paymentData = state.extra as Map<String, dynamic>;
+          return VerifyPinScreen(itemId: itemId, paymentData: paymentData);
+        },
+      ),
+      GoRoute(
+        path: '/payment/:itemId/address_confirm',
+        name: 'address_confirm',
+        builder: (context, state) {
+          final itemId = state.pathParameters['itemId']!;
+          final paymentMethod = state.extra as String;
+          return AddressConfirmScreen(
+            itemId: itemId,
+            paymentMethod: paymentMethod,
+          );
+        },
+      ),
+      // Most general route last
+      GoRoute(
+        path: '/payment/:itemId',
+        name: 'payment_method',
+        builder: (context, state) {
+          final itemId = state.pathParameters['itemId']!;
+          return PaymentMethodScreen(itemId: itemId);
         },
       ),
       GoRoute(
@@ -375,10 +449,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
     // Error page
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Error: ${state.error}'),
-      ),
-    ),
+    errorBuilder:
+        (context, state) =>
+            Scaffold(body: Center(child: Text('Error: ${state.error}'))),
   );
-}); 
+});

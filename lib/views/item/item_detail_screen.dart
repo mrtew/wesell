@@ -461,10 +461,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Buy feature
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Buy feature coming soon')),
-                  );
+                  // Navigate to payment method screen
+                  GoRouter.of(context).push('/payment/${item.itemId}');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber,
