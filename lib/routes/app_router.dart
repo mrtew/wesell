@@ -316,15 +316,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       // Then item-specific routes
+      // GoRoute(
+      //   path: '/payment/:itemId/card_payment',
+      //   name: 'card_payment',
+      //   builder: (context, state) {
+      //     final itemId = state.pathParameters['itemId']!;
+      //     final deliveryAddress = state.extra as Map<String, dynamic>;
+      //     return CardPaymentScreen(
+      //       itemId: itemId,
+      //       deliveryAddress: deliveryAddress,
+      //     );
+      //   },
+      // ),
       GoRoute(
         path: '/payment/:itemId/card_payment',
         name: 'card_payment',
         builder: (context, state) {
           final itemId = state.pathParameters['itemId']!;
-          final deliveryAddress = state.extra as Map<String, dynamic>;
+          final paymentData = state.extra as Map<String, dynamic>;
           return CardPaymentScreen(
             itemId: itemId,
-            deliveryAddress: deliveryAddress,
+            paymentData: paymentData,
           );
         },
       ),

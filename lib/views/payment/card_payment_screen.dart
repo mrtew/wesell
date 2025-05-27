@@ -10,11 +10,11 @@ import '../../widgets/app_bar_widget.dart';
 
 class CardPaymentScreen extends ConsumerStatefulWidget {
   final String itemId;
-  final Map<String, dynamic> deliveryAddress;
+  final Map<String, dynamic> paymentData;
 
   const CardPaymentScreen({
     required this.itemId,
-    required this.deliveryAddress,
+    required this.paymentData,
     super.key,
   });
 
@@ -133,7 +133,8 @@ class _CardPaymentScreenState extends ConsumerState<CardPaymentScreen> {
           seller: sellerAsync,
           item: item,
           paymentDetails: cardDetails,
-          deliveryAddress: widget.deliveryAddress,
+          paymentMethod: widget.paymentData['paymentMethod'],
+          deliveryAddress: widget.paymentData['deliveryAddress'],
         );
 
         if (success) {

@@ -91,6 +91,7 @@ class _AddressConfirmScreenState extends ConsumerState<AddressConfirmScreen> {
           GoRouter.of(context).push(
             '/payment/${widget.itemId}/card_payment',
             extra: {
+              'paymentMethod': 'card',
               'deliveryAddress': selectedAddress,
             },
           );

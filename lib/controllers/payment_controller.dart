@@ -126,6 +126,7 @@ class PaymentController {
     required UserModel seller,
     required ItemModel item,
     required Map<String, dynamic> paymentDetails,
+    required String paymentMethod,
     required Map<String, dynamic> deliveryAddress,
   }) async {
     final batch = _firestore.batch();
@@ -268,8 +269,7 @@ class PaymentController {
         'timestamp': timestamp,
         'type': 'text',
       };
-      print(deliveryAddress);
-      print(deliveryAddress['recipientName']);
+
       if (chatExists) {
         // Use existing chat - just add the new message
         chatId =
