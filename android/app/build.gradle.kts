@@ -17,6 +17,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Enable core library desugaring
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -63,4 +65,11 @@ dependencies {
   // https://firebase.google.com/docs/android/setup#available-libraries
   // Add AppCompat dependency for Stripe
   implementation("androidx.appcompat:appcompat:1.6.1")
+  // Add core library desugaring
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+
+// Fix for Firebase dependency conflicts
+configurations.all {
+    exclude(group = "com.google.firebase", module = "firebase-iid")
 }

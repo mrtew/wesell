@@ -5,6 +5,7 @@ import '../models/item_model.dart';
 import '../models/user_model.dart';
 import '../providers/item_provider.dart';
 import '../providers/user_provider.dart';
+import '../services/notification_service.dart';
 
 final paymentControllerProvider = Provider<PaymentController>((ref) {
   return PaymentController(ref);
@@ -13,6 +14,7 @@ final paymentControllerProvider = Provider<PaymentController>((ref) {
 class PaymentController {
   final ProviderRef ref;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
   PaymentController(this.ref);
 
@@ -99,13 +101,22 @@ class PaymentController {
       await batch.commit();
 
       // After batch completes, update or create chat
-      await _addPostPurchaseMessage(
+      final chatId = await _addPostPurchaseMessage(
         buyer,
         seller,
         item,
         transactionId,
         timestamp,
         deliveryAddress,
+      );
+
+      // Send notifications
+      await _sendPaymentNotifications(
+        buyer: buyer,
+        seller: seller,
+        item: item,
+        transactionId: transactionId,
+        chatId: chatId,
       );
 
       // Refresh provider states
@@ -194,13 +205,22 @@ class PaymentController {
       await batch.commit();
 
       // After batch completes, update or create chat
-      await _addPostPurchaseMessage(
+      final chatId = await _addPostPurchaseMessage(
         buyer,
         seller,
         item,
         transactionId,
         timestamp,
         deliveryAddress,
+      );
+
+      // Send notifications
+      await _sendPaymentNotifications(
+        buyer: buyer,
+        seller: seller,
+        item: item,
+        transactionId: transactionId,
+        chatId: chatId,
       );
 
       // Refresh provider states
@@ -215,8 +235,62 @@ class PaymentController {
     }
   }
 
+  // Send payment notifications to buyer and seller
+  Future<void> _sendPaymentNotifications({
+    required UserModel buyer,
+    required UserModel seller,
+    required ItemModel item,
+    required String transactionId,
+    String? chatId,
+  }) async {
+    try {
+      debugPrint('Starting to send payment notifications...');
+      debugPrint('Buyer: ${buyer.username} (${buyer.uid})');
+      debugPrint('Seller: ${seller.username} (${seller.uid})');
+      debugPrint('Transaction ID: $transactionId');
+      
+      // Format price for display
+      String formattedPrice = (item.price / 100).toStringAsFixed(2);
+
+      // Send notification to buyer
+      debugPrint('Sending notification to buyer...');
+      await _notificationService.sendNotification(
+        userIds: [buyer.uid],
+        transactionId: transactionId,
+        type: 'purchase',
+        title: 'Purchase Successful',
+        content: 'You have successfully purchased "${item.title}" for RM$formattedPrice from ${seller.username}.',
+        additionalData: {
+          'sellerId': seller.uid,
+          'buyerId': buyer.uid,
+          'itemId': item.itemId,
+        },
+      );
+      debugPrint('Buyer notification sent successfully');
+
+      // Send notification to seller
+      debugPrint('Sending notification to seller...');
+      await _notificationService.sendNotification(
+        userIds: [seller.uid],
+        transactionId: transactionId,
+        type: 'purchase',
+        title: 'Item Sold',
+        content: 'Your item "${item.title}" has been sold for RM$formattedPrice to ${buyer.username}.',
+        additionalData: {
+          'sellerId': seller.uid,
+          'buyerId': buyer.uid,
+          'itemId': item.itemId,
+        },
+      );
+      debugPrint('Seller notification sent successfully');
+      debugPrint('All payment notifications completed');
+    } catch (e) {
+      debugPrint('Error sending notifications: $e');
+    }
+  }
+
   // Add purchase message to existing chat or create new chat if none exists
-  Future<void> _addPostPurchaseMessage(
+  Future<String?> _addPostPurchaseMessage(
     UserModel buyer,
     UserModel seller,
     ItemModel item,
@@ -313,8 +387,11 @@ class PaymentController {
           'updatedAt': timestamp,
         });
       }
+
+      return chatId;
     } catch (e) {
       debugPrint('Error creating or updating chat: $e');
+      return null;
     }
   }
 }

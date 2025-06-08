@@ -20,6 +20,7 @@ class UserModel {
   final List<String> transactions;
   final int balance;
   final String pin;
+  final String? fcmToken;
   final Timestamp createdAt;
   final Timestamp updatedAt;
   final Timestamp? deletedAt;
@@ -44,6 +45,7 @@ class UserModel {
     required this.transactions,
     required this.balance,
     required this.pin,
+    this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -72,6 +74,7 @@ class UserModel {
       transactions: List<String>.from(data['transactions']),
       balance: data['balance'],
       pin: data['pin'],
+      fcmToken: data['fcmToken'],
       createdAt: data['createdAt'],
       updatedAt: data['updatedAt'],
       deletedAt: data['deletedAt'],
@@ -99,6 +102,7 @@ class UserModel {
       'transactions': transactions,
       'balance': balance,
       'pin': pin,
+      'fcmToken': fcmToken,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'deletedAt': deletedAt,
@@ -126,6 +130,7 @@ class UserModel {
     List<String>? transactions,
     int? balance,
     String? pin,
+    String? fcmToken,
     Timestamp? createdAt,
     Timestamp? updatedAt,
     Timestamp? deletedAt,
@@ -150,6 +155,7 @@ class UserModel {
       transactions: transactions ?? this.transactions,
       balance: balance ?? this.balance,
       pin: pin ?? this.pin,
+      fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,

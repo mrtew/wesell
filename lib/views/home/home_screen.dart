@@ -13,6 +13,7 @@ import '../../providers/user_provider.dart';
 import '../../utils/currency_formatter.dart';
 import '../../models/item_model.dart';
 import '../../controllers/user_controller.dart';
+import '../../services/notification_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,6 +31,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // Refresh user data when screen loads
     Future.microtask(() => ref.refresh(currentUserProvider));
+    
+    // Initialize notification service
+    _initializeNotifications();
     
     // Add scroll listener for infinite scroll
     _scrollController.addListener(_onScroll);
@@ -62,6 +66,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }
         });
       }
+    }
+  }
+
+  Future<void> _initializeNotifications() async {
+    try {
+      debugPrint('Starting notification initialization...');
+      final currentUser = await ref.read(currentUserProvider.future);
+      if (currentUser != null && mounted) {
+        debugPrint('Initializing notifications for user: ${currentUser.username} (${currentUser.uid})');
+        await NotificationService().initialize(context, currentUser.uid);
+        debugPrint('Notification service initialized successfully');
+      } else {
+        debugPrint('No current user found or widget not mounted');
+      }
+    } catch (e) {
+      debugPrint('Error initializing notification service: $e');
     }
   }
 
