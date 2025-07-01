@@ -36,6 +36,15 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Fix for Google ML Kit resource issues
+        resourceConfigurations += listOf("en", "xxhdpi")
+    }
+
+    packaging {
+        resources {
+            excludes += listOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/LICENSE.txt", "META-INF/license.txt", "META-INF/NOTICE", "META-INF/NOTICE.txt", "META-INF/notice.txt", "META-INF/ASL2.0")
+        }
     }
 
     buildTypes {
@@ -44,6 +53,8 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
         debug {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
