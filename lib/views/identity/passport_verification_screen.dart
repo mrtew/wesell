@@ -22,7 +22,6 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
   File? _frontImage;
   File? _backImage;
   File? _faceImage;
-  bool _isLoading = false;
   bool _isProcessing = false;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passportNumberController = TextEditingController();
@@ -318,7 +317,7 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading || _frontImage == null || _backImage == null || _faceImage == null || _nameController.text.isEmpty || _passportNumberController.text.isEmpty
+                    onPressed: _frontImage == null || _backImage == null || _faceImage == null || _nameController.text.isEmpty || _passportNumberController.text.isEmpty
                         ? null
                         : () => _submitVerification(user),
                     style: ElevatedButton.styleFrom(
@@ -329,16 +328,7 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Submit Verification'),
+                    child: const Text('Submit Verification'),
                   ),
                 ),
               ],
@@ -523,9 +513,26 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Show modal dialog to prevent navigation
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Submitting verification...'),
+              SizedBox(height: 8),
+              Text('Please wait'),
+            ],
+          ),
+        ),
+      ),
+    );
 
     try {
       // Generate unique filenames with timestamp
@@ -571,8 +578,9 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
         ),
       );
       
-      // Refresh user data
+      // Refresh user data and close dialog
       if (mounted) {
+        Navigator.of(context).pop(); // Close the dialog
         await Future.microtask(() => ref.refresh(currentUserProvider));
         
         // Show success message and navigate back
@@ -583,15 +591,10 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
       }
     } catch (e) {
       if (mounted) {
+        Navigator.of(context).pop(); // Close the dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error submitting verification: $e')),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
