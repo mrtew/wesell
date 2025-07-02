@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image/image.dart' as img;
 import '../../widgets/app_bar_widget.dart';
 import '../../providers/user_provider.dart';
 import '../../models/user_model.dart';
@@ -16,6 +18,42 @@ class PassportVerificationScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<PassportVerificationScreen> createState() => _PassportVerificationScreenState();
+}
+
+// Function to compress image in isolate
+Future<Uint8List> _compressImageInIsolate(Uint8List imageBytes) async {
+  return await compute(_compressImageBytes, imageBytes);
+}
+
+// Static function for image compression (runs in isolate)
+Uint8List _compressImageBytes(Uint8List imageBytes) {
+  // Decode image
+  img.Image? image = img.decodeImage(imageBytes);
+  if (image == null) return imageBytes;
+
+  // Calculate new dimensions while maintaining aspect ratio
+  int maxWidth = 800;
+  int maxHeight = 800;
+  
+  int newWidth = image.width;
+  int newHeight = image.height;
+  
+  if (image.width > maxWidth || image.height > maxHeight) {
+    double widthRatio = maxWidth / image.width;
+    double heightRatio = maxHeight / image.height;
+    double ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
+    
+    newWidth = (image.width * ratio).round();
+    newHeight = (image.height * ratio).round();
+  }
+  
+  // Resize image if needed
+  if (newWidth != image.width || newHeight != image.height) {
+    image = img.copyResize(image, width: newWidth, height: newHeight);
+  }
+  
+  // Encode as JPEG with quality 85%
+  return Uint8List.fromList(img.encodeJpg(image, quality: 85));
 }
 
 class _PassportVerificationScreenState extends ConsumerState<PassportVerificationScreen> {
@@ -547,14 +585,20 @@ class _PassportVerificationScreenState extends ConsumerState<PassportVerificatio
       final backImageRef = storageRef.child('users/${user.uid}/identity/$backFileName');
       final faceImageRef = storageRef.child('users/${user.uid}/identity/$faceFileName');
       
-      // Upload images
-      await frontImageRef.putFile(_frontImage!);
+      // Compress and upload images
+      final frontImageBytes = await _frontImage!.readAsBytes();
+      final compressedFrontBytes = await _compressImageInIsolate(frontImageBytes);
+      await frontImageRef.putData(compressedFrontBytes);
       final frontImageUrl = await frontImageRef.getDownloadURL();
       
-      await backImageRef.putFile(_backImage!);
+      final backImageBytes = await _backImage!.readAsBytes();
+      final compressedBackBytes = await _compressImageInIsolate(backImageBytes);
+      await backImageRef.putData(compressedBackBytes);
       final backImageUrl = await backImageRef.getDownloadURL();
       
-      await faceImageRef.putFile(_faceImage!);
+      final faceImageBytes = await _faceImage!.readAsBytes();
+      final compressedFaceBytes = await _compressImageInIsolate(faceImageBytes);
+      await faceImageRef.putData(compressedFaceBytes);
       final faceImageUrl = await faceImageRef.getDownloadURL();
       
       // Create updated identity map
