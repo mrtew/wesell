@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,9 +9,103 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image/image.dart' as img;
 import '../../widgets/app_bar_widget.dart';
 import '../../providers/user_provider.dart';
 import '../../models/user_model.dart';
+import '../../widgets/cached_avatar_widget.dart';
+
+// Compression parameters class for isolate
+class CompressionParams {
+  final Uint8List imageBytes;
+  final String originalPath;
+
+  CompressionParams({
+    required this.imageBytes,
+    required this.originalPath,
+  });
+}
+
+// Compression result class
+class CompressionResult {
+  final Uint8List compressedBytes;
+  final String tempPath;
+  final bool wasCompressed;
+
+  CompressionResult({
+    required this.compressedBytes,
+    required this.tempPath,
+    required this.wasCompressed,
+  });
+}
+
+// Top-level function for background image compression (required for compute())
+Future<CompressionResult> _compressImageInBackground(CompressionParams params) async {
+  try {
+    // Decode image
+    img.Image? image = img.decodeImage(params.imageBytes);
+    if (image == null) {
+      return CompressionResult(
+        compressedBytes: params.imageBytes,
+        tempPath: '${params.originalPath}_original.jpg',
+        wasCompressed: false,
+      );
+    }
+    
+    // Only compress if image is larger than 800px or file size > 500KB
+    final needsCompression = image.width > 800 || image.height > 800 || params.imageBytes.length > 500000;
+    
+    if (!needsCompression) {
+      return CompressionResult(
+        compressedBytes: params.imageBytes,
+        tempPath: '${params.originalPath}_original.jpg',
+        wasCompressed: false,
+      );
+    }
+    
+    // Calculate new dimensions while maintaining aspect ratio
+    int newWidth = image.width;
+    int newHeight = image.height;
+    
+    if (image.width > image.height) {
+      if (newWidth > 800) {
+        newWidth = 800;
+        newHeight = (800 * image.height / image.width).round();
+      }
+    } else {
+      if (newHeight > 800) {
+        newHeight = 800;
+        newWidth = (800 * image.width / image.height).round();
+      }
+    }
+    
+    // Resize image with optimized settings
+    img.Image resizedImage = img.copyResize(
+      image, 
+      width: newWidth, 
+      height: newHeight,
+      interpolation: img.Interpolation.linear,
+    );
+    
+    // Compress with good quality/size balance
+    final compressedBytes = img.encodeJpg(resizedImage, quality: 85);
+    
+    debugPrint('Image compressed: ${params.imageBytes.length} bytes -> ${compressedBytes.length} bytes');
+    
+    return CompressionResult(
+      compressedBytes: Uint8List.fromList(compressedBytes),
+      tempPath: '${params.originalPath}_compressed.jpg',
+      wasCompressed: true,
+    );
+  } catch (e) {
+    debugPrint('Error compressing image: $e');
+    return CompressionResult(
+      compressedBytes: params.imageBytes,
+      tempPath: '${params.originalPath}_original.jpg',
+      wasCompressed: false,
+    );
+  }
+}
 
 class EditAvatarScreen extends ConsumerStatefulWidget {
   const EditAvatarScreen({super.key});
@@ -20,7 +116,6 @@ class EditAvatarScreen extends ConsumerStatefulWidget {
 
 class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
   File? _selectedImage;
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,32 +155,13 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
                             fit: BoxFit.cover,
                           ),
                         )
-                      : user.avatar != ''
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                user.avatar,
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 80,
-                                      color: Colors.grey[400],
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.person,
-                                size: 80,
-                                color: Colors.grey[400],
-                              ),
-                            ),
+                      : CachedAvatarWidget(
+                          avatarUrl: user.avatar.isNotEmpty ? user.avatar : null,
+                          width: 200,
+                          height: 200,
+                          borderRadius: 8,
+                          iconSize: 80,
+                        ),
                 ),
               ),
               
@@ -93,7 +169,7 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
               
               // Select photo button
               ElevatedButton.icon(
-                onPressed: _isLoading ? null : () => _pickImage(context),
+                onPressed: () => _pickImage(context),
                 icon: const Icon(Icons.photo_library),
                 label: const Text('Select Photo'),
                 style: ElevatedButton.styleFrom(
@@ -111,18 +187,9 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
               // Upload button
               if (_selectedImage != null)
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : () => _uploadImage(user),
-                  icon: _isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Icon(Icons.cloud_upload),
-                  label: Text(_isLoading ? 'Uploading...' : 'Upload Photo'),
+                  onPressed: () => _uploadImage(user),
+                  icon: const Icon(Icons.cloud_upload),
+                  label: const Text('Upload Photo'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
@@ -239,14 +306,90 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
     );
   }
 
+  // Compress image in background isolate to prevent UI freeze
+  Future<File?> _compressImage(File imageFile) async {
+    try {
+      // Read image bytes
+      final imageBytes = await imageFile.readAsBytes();
+      
+      // Create compression parameters
+      final params = CompressionParams(
+        imageBytes: imageBytes,
+        originalPath: imageFile.path,
+      );
+      
+      // Run compression in background isolate (won't block UI)
+      final result = await compute(_compressImageInBackground, params);
+      
+      // Create file with compressed data
+      final compressedFile = File(result.tempPath);
+      await compressedFile.writeAsBytes(result.compressedBytes);
+      
+      return compressedFile;
+    } catch (e) {
+      debugPrint('Error compressing image: $e');
+      return imageFile; // Return original file if compression fails
+    }
+  }
+
+  // Show upload dialog
+  void _showUploadDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) => PopScope(
+        canPop: false, // Prevent back button from dismissing
+        child: Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Uploading Photo',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please wait while we upload your photo...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _uploadImage(UserModel user) async {
     if (_selectedImage == null) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Show upload dialog first
+    _showUploadDialog();
 
     try {
+      // Compress the image first
+      final compressedImage = await _compressImage(_selectedImage!);
+      if (compressedImage == null) {
+        throw Exception('Failed to process image');
+      }
+
       // Generate a unique filename with timestamp
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = '${user.uid}_avatar_$timestamp.jpg';
@@ -255,11 +398,20 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
       final storageRef = FirebaseStorage.instance.ref();
       final avatarRef = storageRef.child('users/${user.uid}/avatar/$fileName');
       
-      // Upload file
-      await avatarRef.putFile(_selectedImage!);
+      // Upload compressed file
+      await avatarRef.putFile(compressedImage);
       
       // Get download URL
       final downloadUrl = await avatarRef.getDownloadURL();
+      
+      // Clean up compressed file if it's different from original
+      if (compressedImage.path != _selectedImage!.path) {
+        try {
+          await compressedImage.delete();
+        } catch (e) {
+          debugPrint('Could not delete compressed file: $e');
+        }
+      }
       
       // Update user avatar in Firestore
       final userController = ref.read(userControllerProvider);
@@ -272,26 +424,26 @@ class _EditAvatarScreenState extends ConsumerState<EditAvatarScreen> {
       
       // Refresh user data
       await Future.microtask(() => ref.refresh(currentUserProvider));
-      await Future.delayed(Duration(seconds: 1));
       
-      // Show success message and navigate back
+      // Close upload dialog
       if (mounted) {
+        Navigator.of(context).pop(); // Close dialog
+        
+        // Show success message and navigate back
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile photo updated successfully')),
         );
-        GoRouter.of(context).pop();
+        GoRouter.of(context).pop(); // Go back to previous screen
       }
     } catch (e) {
+      // Close upload dialog first
       if (mounted) {
+        Navigator.of(context).pop(); // Close dialog
+        
+        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error updating profile photo: $e')),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }

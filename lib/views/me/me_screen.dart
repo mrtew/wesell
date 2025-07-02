@@ -7,6 +7,7 @@ import '../../utils/currency_formatter.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/custom_dialog.dart';
+import '../../widgets/cached_avatar_widget.dart';
 
 class MeScreen extends ConsumerStatefulWidget {
   const MeScreen({super.key});
@@ -54,29 +55,12 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                     child: Row(
                       children: [
                         // Profile Image
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: user?.avatar != ''
-                              ? Image.network(
-                                  user?.avatar ?? '',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 60,
-                                      height: 60,
-                                      color: Colors.grey[200],
-                                      child: Icon(Icons.person, color: Colors.grey[400], size: 40),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  width: 60,
-                                  height: 60,
-                                  color: Colors.grey[200],
-                                  child: Icon(Icons.person, color: Colors.grey[400], size: 40),
-                                )
+                        CachedAvatarWidget(
+                          avatarUrl: user?.avatar,
+                          width: 60,
+                          height: 60,
+                          borderRadius: 4,
+                          iconSize: 40,
                         ),
                         // const SizedBox(width: 8),
                         // Container(
