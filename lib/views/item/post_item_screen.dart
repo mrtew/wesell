@@ -23,9 +23,12 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _originalPriceController = TextEditingController();
+  final _titleFocusNode = FocusNode();
+  final _descriptionFocusNode = FocusNode();
+  final _priceFocusNode = FocusNode();
+  final _originalPriceFocusNode = FocusNode();
   String _selectedCategory = categories.first.id;
   List<File> _imageFiles = [];
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -33,6 +36,10 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _originalPriceController.dispose();
+    _titleFocusNode.dispose();
+    _descriptionFocusNode.dispose();
+    _priceFocusNode.dispose();
+    _originalPriceFocusNode.dispose();
     super.dispose();
   }
 
@@ -76,6 +83,51 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
     });
   }
 
+  // Show posting dialog
+  void _showPostingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) => PopScope(
+        canPop: false, // Prevent back button from dismissing
+        child: Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  color: Colors.amber,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Posting Item',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please wait while we post your item...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_imageFiles.isEmpty) {
@@ -85,9 +137,8 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         return;
       }
 
-      setState(() {
-        _isLoading = true;
-      });
+      // Show posting dialog first
+      _showPostingDialog();
 
       try {
         // Get current user ID
@@ -116,16 +167,18 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         // Call provider to create item
         await ref.read(createItemProvider(itemData).future);
         
-        // Show success message
+        // Close posting dialog
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Item posted successfully!')),
-          );
-          await Future.microtask(() => ref.refresh(currentUserProvider));
-          ref.read(homeItemsProvider.notifier).refresh();
-          ref.read(userPostedItemsProvider.notifier).refresh();
-          // Clear form
-          // _formKey.currentState!.reset();
+          Navigator.of(context).pop(); // Close dialog
+          
+          // Remove focus from all text fields first
+          _titleFocusNode.unfocus();
+          _descriptionFocusNode.unfocus();
+          _priceFocusNode.unfocus();
+          _originalPriceFocusNode.unfocus();
+          FocusScope.of(context).unfocus();
+          
+          // Clear form after removing focus
           setState(() {
             _titleController.clear();
             _descriptionController.clear();
@@ -134,18 +187,31 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
             _selectedCategory = categories.first.id;
             _imageFiles = [];
           });
+          
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Item posted successfully!')),
+          );
+          await Future.microtask(() => ref.refresh(currentUserProvider));
+          ref.read(homeItemsProvider.notifier).refresh();
+          ref.read(userPostedItemsProvider.notifier).refresh();
         }
       } catch (e) {
+        // Close posting dialog first
         if (mounted) {
+          Navigator.of(context).pop(); // Close dialog
+          
+          // Remove focus from all text fields to prevent keyboard from showing
+          _titleFocusNode.unfocus();
+          _descriptionFocusNode.unfocus();
+          _priceFocusNode.unfocus();
+          _originalPriceFocusNode.unfocus();
+          FocusScope.of(context).unfocus();
+          
+          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error posting item: $e')),
           );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
         }
       }
     }
@@ -158,9 +224,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         title: 'Post Item',
         showBackButton: false,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
@@ -179,6 +243,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: _titleController,
+                      focusNode: _titleFocusNode,
                       decoration: const InputDecoration(
                         labelText: 'Title',
                         border: OutlineInputBorder(),
@@ -195,6 +260,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _descriptionController,
+                      focusNode: _descriptionFocusNode,
                       decoration: const InputDecoration(
                         labelText: 'Description',
                         border: OutlineInputBorder(),
@@ -211,6 +277,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _priceController,
+                      focusNode: _priceFocusNode,
                       decoration: const InputDecoration(
                         labelText: 'Price',
                         border: OutlineInputBorder(),
@@ -235,6 +302,7 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _originalPriceController,
+                      focusNode: _originalPriceFocusNode,
                       decoration: const InputDecoration(
                         labelText: 'Original Price',
                         border: OutlineInputBorder(),

@@ -51,7 +51,6 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
   List<String> _existingImageUrls = [];
   List<String> _removedImageUrls = [];
   bool _isLoading = true;
-  bool _isSaving = false;
   ItemModel? _item;
 
   @override
@@ -163,9 +162,26 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
         return;
       }
 
-      setState(() {
-        _isSaving = true;
-      });
+      // Show modal dialog to prevent navigation
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => PopScope(
+          canPop: false,
+          child: const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Saving changes...'),
+                SizedBox(height: 8),
+                Text('Please wait'),
+              ],
+            ),
+          ),
+        ),
+      );
 
       try {
         // Convert price string to double
@@ -192,8 +208,9 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
         ref.refresh(itemByIdProvider(widget.itemId));
         ref.refresh(currentUserProvider);
         
-        // Show success message and navigate back
+        // Close dialog and navigate back
         if (mounted) {
+          Navigator.of(context).pop(); // Close the dialog
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           GoRouter.of(context).pop(true); // Return true to indicate success
           
@@ -203,9 +220,7 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() {
-            _isSaving = false;
-          });
+          Navigator.of(context).pop(); // Close the dialog
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error updating item: $e')),
           );
@@ -223,16 +238,7 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _isSaving
-              ? const Center(child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Saving changes...'),
-                  ],
-                ))
-              : SingleChildScrollView(
+          : SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Form(
                     key: _formKey,
