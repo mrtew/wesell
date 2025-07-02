@@ -566,22 +566,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                             children: [
                               const CircularProgressIndicator(),
                               const SizedBox(height: 16),
-                              // Text("Deleting item... ($timeoutSeconds)"),
-                              Text("Deleting item..."),
-                              const SizedBox(height: 16),
-                              TextButton(
-                                onPressed: () {
-                                  countdownTimer?.cancel();
-                                  isDeleting = false;
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Delete request sent but operation may still continue in the background.'),
-                                      duration: Duration(seconds: 5),
-                                    ),
-                                  );
-                                },
-                                child: const Text("Cancel"),
+                              const Text("Deleting item..."),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Please wait...",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ],
                           ),
