@@ -21,7 +21,8 @@ final createItemProvider = FutureProvider.family<String, Map<String, dynamic>>((
     category: itemData['category'] as String,
     originalPrice: itemData['originalPrice'] as double,
     price: itemData['price'] as double,
-    imageFiles: itemData['imageFiles'] as List<File>,
+    imageFiles: itemData['imageFiles'] as List<File>, // Compressed images for upload
+    originalImageFiles: itemData['originalImageFiles'] as List<File>?, // Original images for ML Kit
   );
 });
 

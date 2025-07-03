@@ -1,14 +1,52 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 import '../../providers/user_provider.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../utils/categories.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/auth_provider.dart';
+
+// Function to compress image in isolate
+Future<Uint8List> _compressImageInIsolate(Uint8List imageBytes) async {
+  return await compute(_compressImageBytes, imageBytes);
+}
+
+// Static function for image compression (runs in isolate)
+Uint8List _compressImageBytes(Uint8List imageBytes) {
+  // Decode image
+  img.Image? image = img.decodeImage(imageBytes);
+  if (image == null) return imageBytes;
+
+  // Calculate new dimensions while maintaining aspect ratio
+  int maxWidth = 800;
+  int maxHeight = 800;
+  
+  int newWidth = image.width;
+  int newHeight = image.height;
+  
+  if (image.width > maxWidth || image.height > maxHeight) {
+    double widthRatio = maxWidth / image.width;
+    double heightRatio = maxHeight / image.height;
+    double ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
+    
+    newWidth = (image.width * ratio).round();
+    newHeight = (image.height * ratio).round();
+  }
+  
+  // Resize image if needed
+  if (newWidth != image.width || newHeight != image.height) {
+    image = img.copyResize(image, width: newWidth, height: newHeight);
+  }
+  
+  // Encode as JPEG with quality 85%
+  return Uint8List.fromList(img.encodeJpg(image, quality: 85));
+}
 
 class PostItemScreen extends ConsumerStatefulWidget {
   const PostItemScreen({super.key});
@@ -29,6 +67,33 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
   final _originalPriceFocusNode = FocusNode();
   String _selectedCategory = categories.first.id;
   List<File> _imageFiles = [];
+
+  // Helper method to compress all images
+  Future<List<File>> _compressImages(List<File> originalImages) async {
+    List<File> compressedImages = [];
+    
+    for (int i = 0; i < originalImages.length; i++) {
+      try {
+        // Read original image bytes
+        final originalBytes = await originalImages[i].readAsBytes();
+        
+        // Compress image in background isolate
+        final compressedBytes = await _compressImageInIsolate(originalBytes);
+        
+        // Create temporary file for compressed image
+        final tempDir = Directory.systemTemp;
+        final tempFile = File('${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+        await tempFile.writeAsBytes(compressedBytes);
+        
+        compressedImages.add(tempFile);
+      } catch (e) {
+        // If compression fails, use original image
+        compressedImages.add(originalImages[i]);
+      }
+    }
+    
+    return compressedImages;
+  }
 
   @override
   void dispose() {
@@ -153,6 +218,11 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
         final price = double.parse(_priceController.text);
         final originalPrice = double.parse(_originalPriceController.text);
 
+        // Compress images before uploading
+        // Note: If ML Kit processing is done in the provider, it should be moved here
+        // to use original images before compression
+        final compressedImages = await _compressImages(_imageFiles);
+
         // Create item data map
         final itemData = {
           'sellerId': userId,
@@ -161,11 +231,23 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
           'category': _selectedCategory,
           'price': price,
           'originalPrice': originalPrice,
-          'imageFiles': _imageFiles,
+          'imageFiles': compressedImages,
+          'originalImageFiles': _imageFiles, // For ML Kit processing if needed
         };
 
         // Call provider to create item
         await ref.read(createItemProvider(itemData).future);
+        
+        // Clean up temporary compressed files
+        for (var file in compressedImages) {
+          if (file.path.contains('compressed_')) {
+            try {
+              await file.delete();
+            } catch (e) {
+              // Ignore cleanup errors
+            }
+          }
+        }
         
         // Close posting dialog
         if (mounted) {
@@ -197,6 +279,19 @@ class _PostItemScreenState extends ConsumerState<PostItemScreen> {
           ref.read(userPostedItemsProvider.notifier).refresh();
         }
       } catch (e) {
+        // Clean up any temporary compressed files in case of error
+        try {
+          final tempDir = Directory.systemTemp;
+          final files = await tempDir.list().toList();
+          for (var file in files) {
+            if (file is File && file.path.contains('compressed_')) {
+              await file.delete();
+            }
+          }
+        } catch (cleanupError) {
+          // Ignore cleanup errors
+        }
+        
         // Close posting dialog first
         if (mounted) {
           Navigator.of(context).pop(); // Close dialog

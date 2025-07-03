@@ -1,16 +1,54 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image/image.dart' as img;
 import '../../providers/user_provider.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../utils/categories.dart';
 import '../../providers/item_provider.dart';
 import '../../models/item_model.dart';
 import '../../utils/currency_formatter.dart';
+
+// Function to compress image in isolate
+Future<Uint8List> _compressImageInIsolate(Uint8List imageBytes) async {
+  return await compute(_compressImageBytes, imageBytes);
+}
+
+// Static function for image compression (runs in isolate)
+Uint8List _compressImageBytes(Uint8List imageBytes) {
+  // Decode image
+  img.Image? image = img.decodeImage(imageBytes);
+  if (image == null) return imageBytes;
+
+  // Calculate new dimensions while maintaining aspect ratio
+  int maxWidth = 800;
+  int maxHeight = 800;
+  
+  int newWidth = image.width;
+  int newHeight = image.height;
+  
+  if (image.width > maxWidth || image.height > maxHeight) {
+    double widthRatio = maxWidth / image.width;
+    double heightRatio = maxHeight / image.height;
+    double ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
+    
+    newWidth = (image.width * ratio).round();
+    newHeight = (image.height * ratio).round();
+  }
+  
+  // Resize image if needed
+  if (newWidth != image.width || newHeight != image.height) {
+    image = img.copyResize(image, width: newWidth, height: newHeight);
+  }
+  
+  // Encode as JPEG with quality 85%
+  return Uint8List.fromList(img.encodeJpg(image, quality: 85));
+}
 
 // Provider for editing an item
 final editItemProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, itemData) async {
@@ -23,7 +61,8 @@ final editItemProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref,
     category: itemData['category'] as String,
     originalPrice: itemData['originalPrice'] as double,
     price: itemData['price'] as double,
-    newImages: itemData['newImages'] as List<File>?,
+    newImages: itemData['newImages'] as List<File>?, // Compressed images for upload
+    originalNewImages: itemData['originalNewImages'] as List<File>?, // Original images for ML Kit
     removedImageUrls: itemData['removedImageUrls'] as List<String>?,
     existingImageUrls: itemData['existingImageUrls'] as List<String>?,
   );
@@ -52,6 +91,35 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
   List<String> _removedImageUrls = [];
   bool _isLoading = true;
   ItemModel? _item;
+
+  // Helper method to compress new images
+  Future<List<File>> _compressNewImages(List<File> originalImages) async {
+    if (originalImages.isEmpty) return originalImages;
+    
+    List<File> compressedImages = [];
+    
+    for (int i = 0; i < originalImages.length; i++) {
+      try {
+        // Read original image bytes
+        final originalBytes = await originalImages[i].readAsBytes();
+        
+        // Compress image in background isolate
+        final compressedBytes = await _compressImageInIsolate(originalBytes);
+        
+        // Create temporary file for compressed image
+        final tempDir = Directory.systemTemp;
+        final tempFile = File('${tempDir.path}/compressed_edit_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+        await tempFile.writeAsBytes(compressedBytes);
+        
+        compressedImages.add(tempFile);
+      } catch (e) {
+        // If compression fails, use original image
+        compressedImages.add(originalImages[i]);
+      }
+    }
+    
+    return compressedImages;
+  }
 
   @override
   void initState() {
@@ -188,6 +256,12 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
         final price = double.parse(_priceController.text.replaceAll(',', ''));
         final originalPrice = double.parse(_originalPriceController.text.replaceAll(',', ''));
 
+        // Compress new images before uploading (if any)
+        List<File>? compressedNewImages;
+        if (_newImageFiles.isNotEmpty) {
+          compressedNewImages = await _compressNewImages(_newImageFiles);
+        }
+
         // Create item data map
         final itemData = {
           'itemId': widget.itemId,
@@ -196,13 +270,27 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
           'category': _selectedCategory,
           'price': price,
           'originalPrice': originalPrice,
-          'newImages': _newImageFiles.isNotEmpty ? _newImageFiles : null,
+          'newImages': compressedNewImages,
+          'originalNewImages': _newImageFiles.isNotEmpty ? _newImageFiles : null, // For ML Kit if needed
           'removedImageUrls': _removedImageUrls.isNotEmpty ? _removedImageUrls : null,
           'existingImageUrls': _existingImageUrls,
         };
 
         // Call provider to update item
         await ref.read(editItemProvider(itemData).future);
+        
+        // Clean up temporary compressed files
+        if (compressedNewImages != null) {
+          for (var file in compressedNewImages) {
+            if (file.path.contains('compressed_edit_')) {
+              try {
+                await file.delete();
+              } catch (e) {
+                // Ignore cleanup errors
+              }
+            }
+          }
+        }
         
         // Refresh data
         ref.refresh(itemByIdProvider(widget.itemId));
@@ -219,6 +307,19 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
           );
         }
       } catch (e) {
+        // Clean up any temporary compressed files in case of error
+        try {
+          final tempDir = Directory.systemTemp;
+          final files = await tempDir.list().toList();
+          for (var file in files) {
+            if (file is File && file.path.contains('compressed_edit_')) {
+              await file.delete();
+            }
+          }
+        } catch (cleanupError) {
+          // Ignore cleanup errors
+        }
+        
         if (mounted) {
           Navigator.of(context).pop(); // Close the dialog
           ScaffoldMessenger.of(context).showSnackBar(
