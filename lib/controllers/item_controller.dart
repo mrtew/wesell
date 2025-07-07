@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import '../models/item_model.dart';
+import '../controllers/seller_controller.dart';
 
 class ItemController {
+  final SellerController _sellerController = SellerController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final CollectionReference _itemsCollection = 
@@ -55,6 +57,11 @@ class ItemController {
       DocumentReference docRef = await _itemsCollection.add(newItem.toMap());
       
       // Update user's itemsPosted array and role to 'seller'
+      // Check if seller record exists, if not, create one
+      bool sellerExists = await _sellerController.sellerRecordExists(sellerId);
+      if (!sellerExists) {
+        await _sellerController.createSellerRecord(sellerId);
+      }
       await _firestore.collection('users').doc(sellerId).update({
         'itemsPosted': FieldValue.arrayUnion([docRef.id]),
         'role': 'seller',
