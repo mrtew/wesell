@@ -438,10 +438,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   child: ElevatedButton(
                     onPressed: () => _handleEditItem(context, item),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Edit Item', style: TextStyle(fontSize: 16)),
+                    child: const Text('Edit Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -450,9 +451,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                     onPressed: () => _handleDeleteItem(context, item),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Delete Item', style: TextStyle(fontSize: 16)),
+                    child: const Text('Delete Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

@@ -441,12 +441,13 @@ class _EditItemScreenState extends ConsumerState<EditItemScreen> {
                           child: ElevatedButton(
                             onPressed: _submitForm,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: const Text(
                               'Save Changes',
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
