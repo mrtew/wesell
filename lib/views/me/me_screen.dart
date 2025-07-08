@@ -101,7 +101,7 @@ class _MeScreenState extends ConsumerState<MeScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'WeSell ID: ${user?.userId.substring(0, 14)}...',
+                                'WeSell ID: ${user?.userId.substring(0, 12)}...',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 14,
