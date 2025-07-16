@@ -13,6 +13,7 @@ import 'package:wesell/views/payment/verify_pin_screen.dart';
 import 'package:wesell/views/pin/new_pin_1_screen.dart';
 import 'package:wesell/views/pin/new_pin_2_screen.dart';
 import 'package:wesell/views/pin/old_pin_screen.dart';
+import 'package:wesell/views/transaction/transaction_history_screen.dart';
 import '../views/auth/login_screen.dart';
 import '../views/home/home_screen.dart';
 import '../views/item/post_item_screen.dart';
@@ -347,6 +348,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           final itemId = state.pathParameters['itemId']!;
           final paymentData = state.extra as Map<String, dynamic>;
           return VerifyPinScreen(itemId: itemId, paymentData: paymentData);
+        },
+      ),
+      GoRoute(
+        path: '/transaction_history',
+        name: 'transaction_history',
+        pageBuilder: (context, state) {
+          return MaterialPage(child: const TransactionHistoryScreen());
         },
       ),
       GoRoute(

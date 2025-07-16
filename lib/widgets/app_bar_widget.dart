@@ -7,12 +7,14 @@ class AppBarWidget extends ConsumerWidget implements PreferredSizeWidget {
   final String title;
   final bool showBackButton;
   final String path;
+  final List<Widget>? actions;
 
   const AppBarWidget({
     super.key,
     required this.title,
     required this.showBackButton,
     this.path = '/home',
+    this.actions,
   });
 
   @override
@@ -35,20 +37,7 @@ class AppBarWidget extends ConsumerWidget implements PreferredSizeWidget {
           GoRouter.of(context).pop();
         },
       ) : null,
-      // actions: [
-      //   IconButton(
-      //     icon: const Icon(Icons.search),
-      //     onPressed: () {
-      //       // Search action
-      //     },
-      //   ),
-      //   IconButton(
-      //     icon: const Icon(Icons.add),
-      //     onPressed: () {
-      //       // Add action
-      //     },
-      //   ),
-      // ],
+      actions: actions,
       elevation: 1,
     );
   }

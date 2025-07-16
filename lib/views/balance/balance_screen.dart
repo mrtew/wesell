@@ -44,9 +44,17 @@ class _BalanceScreenState extends ConsumerState<BalanceScreen> {
     final userAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
-      appBar: const AppBarWidget(
+      appBar: AppBarWidget(
         title: 'Wallet',
         showBackButton: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              GoRouter.of(context).push('/transaction_history');
+            },
+          ),
+        ],
       ),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
