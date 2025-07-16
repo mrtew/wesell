@@ -378,6 +378,11 @@ class _MyKadVerificationScreenState extends ConsumerState<MyKadVerificationScree
   }
 
   Future<void> _pickImage(BuildContext context, bool isFront, {bool isFace = false}) async {
+    if (isFace) {
+      // Open front camera for selfie
+      await _takeSelfie();
+      return;
+    }
     // Request permission
     final status = await Permission.photos.request();
 
@@ -387,6 +392,27 @@ class _MyKadVerificationScreenState extends ConsumerState<MyKadVerificationScree
       _showPermissionDeniedDialog();
     } else if (status.isPermanentlyDenied) {
       _showPermissionPermanentlyDeniedDialog();
+    }
+  }
+
+  Future<void> _takeSelfie() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _faceImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error taking selfie: $e')),
+        );
+      }
     }
   }
 
