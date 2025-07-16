@@ -277,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         decoration: InputDecoration(
-                          hintText: 'Enter verification code',
+                          hintText: 'Enter SMS code',
                           hintStyle: TextStyle(color: Colors.grey[400]),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 15),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../providers/user_provider.dart';
+import '../../widgets/cached_avatar_widget.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -47,29 +48,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // User avatar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: user?.avatar != ''
-                            ? Image.network(
-                                user?.avatar ?? '',
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 40,
-                                    height: 40,
-                                    color: Colors.grey[200],
-                                    child: Icon(Icons.person, color: Colors.grey[400]),
-                                  );
-                                },
-                              )
-                            : Container(
-                                width: 40,
-                                height: 40,
-                                color: Colors.grey[200],
-                                child: Icon(Icons.person, color: Colors.grey[400]),
-                              )
+                      CachedAvatarWidget(
+                        avatarUrl: user?.avatar,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 4,
+                        iconSize: 24,
                       ),
                       const SizedBox(width: 8),
                       Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),

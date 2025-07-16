@@ -236,7 +236,8 @@ class ChatScreen extends ConsumerWidget {
                       // Username and verification
                       Row(
                         children: [
-                          Expanded(
+                          Flexible(
+                            fit: FlexFit.loose,
                             child: Text(
                               otherUser.username.isNotEmpty ? otherUser.username : 'User',
                               style: const TextStyle(
@@ -248,10 +249,13 @@ class ChatScreen extends ConsumerWidget {
                             ),
                           ),
                           if (otherUser.isIdentityVerified == true)
-                            Icon(
-                              Icons.verified_rounded,
-                              size: 16,
-                              color: Colors.blue[300],
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4.0),
+                              child: Icon(
+                                Icons.verified_rounded,
+                                size: 16,
+                                color: Colors.blue[300],
+                              ),
                             ),
                         ],
                       ),

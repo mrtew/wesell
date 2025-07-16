@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import '../models/item_model.dart';
+import '../controllers/seller_controller.dart';
 
 class ItemController {
+  final SellerController _sellerController = SellerController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final CollectionReference _itemsCollection = 
@@ -21,17 +23,20 @@ class ItemController {
     required double originalPrice,
     required double price,
     required List<File> imageFiles,
+    List<File>? originalImageFiles, // For ML Kit processing
   }) async {
     try {
       // Convert prices to integers (storing in smallest currency unit, e.g., cents)
       final int originalPriceInt = (originalPrice * 100).round();
       final int priceInt = (price * 100).round();
       
-      // Upload images and get download URLs
+      // Upload compressed images and get download URLs
       List<String> imageUrls = await _uploadImages(sellerId, imageFiles);
       
-      // Extract image metadata for future image search feature
-      Map<String, dynamic> imageMetadata = await _extractImageMetadata(imageFiles);
+      // Extract image metadata from original resolution images for better accuracy
+      Map<String, dynamic> imageMetadata = await _extractImageMetadata(
+        originalImageFiles ?? imageFiles, // Use original images if available, fallback to compressed
+      );
       
       // Create new item
       final ItemModel newItem = ItemModel(
@@ -52,6 +57,11 @@ class ItemController {
       DocumentReference docRef = await _itemsCollection.add(newItem.toMap());
       
       // Update user's itemsPosted array and role to 'seller'
+      // Check if seller record exists, if not, create one
+      bool sellerExists = await _sellerController.sellerRecordExists(sellerId);
+      if (!sellerExists) {
+        await _sellerController.createSellerRecord(sellerId);
+      }
       await _firestore.collection('users').doc(sellerId).update({
         'itemsPosted': FieldValue.arrayUnion([docRef.id]),
         'role': 'seller',
@@ -63,7 +73,7 @@ class ItemController {
     }
   }
   
-  // Upload images to Firebase Storage
+  // Upload images to Firebase Storage (uses compressed images for faster upload)
   Future<List<String>> _uploadImages(String sellerId, List<File> imageFiles) async {
     List<String> imageUrls = [];
     
@@ -85,7 +95,7 @@ class ItemController {
     return imageUrls;
   }
   
-  // Extract metadata from images using Google ML Kit
+  // Extract metadata from images using Google ML Kit (uses original resolution images for better accuracy)
   Future<Map<String, dynamic>> _extractImageMetadata(List<File> imageFiles) async {
     Map<String, dynamic> metadata = {};
     
@@ -226,6 +236,7 @@ class ItemController {
     required double originalPrice,
     required double price,
     List<File>? newImages,
+    List<File>? originalNewImages, // For ML Kit processing if needed
     List<String>? removedImageUrls,
     List<String>? existingImageUrls,
   }) async {

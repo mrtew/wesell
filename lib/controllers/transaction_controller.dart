@@ -25,17 +25,74 @@ class TransactionController {
     }
   }
 
-  // Get all transactions for a user
+  // Get all transactions for a user (buyer, seller, or top-up)
   Future<List<TransactionModel>> getUserTransactions(String userId) async {
     try {
-      QuerySnapshot snapshot = await _transactionsCollection
+      List<TransactionModel> allTransactions = [];
+      
+      // Get transactions where user is buyer
+      QuerySnapshot buyerTransactions = await _transactionsCollection
+          .where('buyerId', isEqualTo: userId)
+          .get();
+      
+      // Get transactions where user is seller
+      QuerySnapshot sellerTransactions = await _transactionsCollection
+          .where('sellerId', isEqualTo: userId)
+          .get();
+      
+      // Add buyer transactions
+      for (var doc in buyerTransactions.docs) {
+        allTransactions.add(TransactionModel.fromFirestore(doc));
+      }
+      
+      // Add seller transactions (avoid duplicates)
+      for (var doc in sellerTransactions.docs) {
+        if (!allTransactions.any((t) => t.id == doc.id)) {
+          allTransactions.add(TransactionModel.fromFirestore(doc));
+        }
+      }
+      
+      // Sort by createdAt in descending order
+      allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      return allTransactions;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Alternative method using a single query (requires composite index)
+  Future<List<TransactionModel>> getUserTransactionsWithIndex(String userId) async {
+    try {
+      // This approach requires composite indexes for both buyerId+createdAt and sellerId+createdAt
+      List<TransactionModel> allTransactions = [];
+      
+      // Get transactions where user is buyer
+      QuerySnapshot buyerTransactions = await _transactionsCollection
           .where('buyerId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
       
-      return snapshot.docs
-          .map((doc) => TransactionModel.fromFirestore(doc))
-          .toList();
+      // Get transactions where user is seller
+      QuerySnapshot sellerTransactions = await _transactionsCollection
+          .where('sellerId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      // Combine and sort
+      allTransactions.addAll(buyerTransactions.docs.map((doc) => TransactionModel.fromFirestore(doc)));
+      allTransactions.addAll(sellerTransactions.docs.map((doc) => TransactionModel.fromFirestore(doc)));
+      
+      // Remove duplicates and sort
+      final uniqueTransactions = <String, TransactionModel>{};
+      for (var transaction in allTransactions) {
+        uniqueTransactions[transaction.id] = transaction;
+      }
+      
+      final result = uniqueTransactions.values.toList();
+      result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      return result;
     } catch (e) {
       rethrow;
     }
@@ -99,4 +156,4 @@ class TransactionController {
       return false;
     }
   }
-} 
+}

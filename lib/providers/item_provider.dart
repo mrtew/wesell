@@ -21,7 +21,8 @@ final createItemProvider = FutureProvider.family<String, Map<String, dynamic>>((
     category: itemData['category'] as String,
     originalPrice: itemData['originalPrice'] as double,
     price: itemData['price'] as double,
-    imageFiles: itemData['imageFiles'] as List<File>,
+    imageFiles: itemData['imageFiles'] as List<File>, // Compressed images for upload
+    originalImageFiles: itemData['originalImageFiles'] as List<File>?, // Original images for ML Kit
   );
 });
 
@@ -158,11 +159,22 @@ class ItemsByIdsNotifier extends StateNotifier<AsyncValue<List<ItemModel>>> {
       final itemFutures = _itemIds.map((id) => itemController.getItemById(id));
       final fetchedItems = await Future.wait(itemFutures);
       
-      // Filter out null items and sort by createdAt in descending order
+      // Filter out null items and order them based on the position in
+      // the user's list of IDs (descending ‒ last ID appears first).
       _allItems = fetchedItems
           .whereType<ItemModel>()
-          .toList()
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          .toList();
+
+      // Build a map of itemId -> index for quick lookup
+      final Map<String, int> _idOrder = {
+        for (int i = 0; i < _itemIds.length; i++) _itemIds[i]: i,
+      };
+      _allItems.sort((a, b) {
+        final aIndex = _idOrder[a.itemId] ?? 0;
+        final bIndex = _idOrder[b.itemId] ?? 0;
+        // Higher index (later in the array) should come first
+        return bIndex.compareTo(aIndex);
+      });
       
       // Set the initial displayed items
       _displayedCount = _pageSize > _allItems.length ? _allItems.length : _pageSize;
